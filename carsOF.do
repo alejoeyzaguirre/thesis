@@ -177,7 +177,7 @@ gen horagrupo = st_cohort + hora1
 replace outcome = 0 if outcome == .
 
 
-
+/*
 ******************************************
 ***** FIGURAS ****************************
 ******************************************
@@ -221,12 +221,16 @@ preserve
 collapse (mean) outcome treat, by(cohort)
 twoway (scatter outcome treat) (lfit outcome treat)
 restore
+*/
+
 
 
 * Corremos el DiD para Accidentes:
 
 * Botamos observaciones post apagón:
 drop if filter == 0
+
+
 
 * MARGEN INTENSIVO:
 
@@ -431,6 +435,7 @@ gen horagrupo = st_cohort + hora1
 * Reemplazamos con cero en los outcomes vacíos:
 replace outcome = 0 if outcome == .
 
+/*
 ******************************************
 ***** FIGURAS ****************************
 ******************************************
@@ -475,7 +480,7 @@ preserve
 collapse (mean) outcome treat, by(cohort)
 twoway (scatter outcome treat) (lfit outcome treat)
 restore
-
+*/
 
 
 
