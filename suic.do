@@ -125,7 +125,7 @@ preserve
 collapse (mean) suicide anxiety depression index, by(fecha day month hour)
 keep if _n > 337 & _n < 505
 gen date = _n / 24
-gen during = 0
+gen during = .
 replace during = 25 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
 graph save outage, replace
@@ -136,7 +136,7 @@ preserve
 collapse (mean) suicide anxiety depression index, by(fecha)
 keep if _n < 337 & _n > 169
 gen date = _n / 24 
-gen during = 0
+gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
 graph save preout, replace
 restore
@@ -146,7 +146,7 @@ preserve
 collapse (mean) suicide anxiety depression index, by(fecha)
 keep if _n > 505 & _n < 674
 gen date = _n / 24 
-gen during = 0
+gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
 graph save postout, replace
 restore
@@ -183,27 +183,54 @@ graph combine socsui.gph socanx.gph socdep.gph socind.gph
 */
 
 * Figura Jeanne:
-
+set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
 gen weekday = 0
 replace weekday = mod(day+2,7) if month == 9
 replace weekday = mod(day+4,7) if month == 10
 replace weekday = 7 if weekday == 0
+bys date: gen num_fecha = _n
+sort state date
+order state date suicide anxiety depression
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
-reg suicide i.weekday i.hour
+reg suicide i.weekday i.ef_hour i.num_fecha
 predict res_sui, residuals
-reg anxiety i.weekday i.hour
+reg anxiety i.weekday i.ef_hour i.num_fecha
 predict res_anx, residuals
-reg depression i.weekday i.hour
+reg depression i.weekday i.ef_hour i.num_fecha
 predict res_dep, residuals
 
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
 * Serán 3 series para cada término: pre, post y during.
-gen pre = 
+gen period = 0
+replace period = 1 if day ==4 & month == 10
+replace period = 2 if day > 4 & month == 10
+egen plot_sui = mean(res_sui), by(period hour)
+egen plot_anx = mean(res_anx), by(period hour)
+egen plot_dep = mean(res_dep), by(period hour)
 
 
+*preserve
+duplicates drop period hour, force
+gen up = .
+gen down = .
+replace up = 3 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace down = -7 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+
+twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_sui hour if period == 0, lcolor(orange*.5)) /*
+*/ (line plot_sui hour if period == 1, lcolor(blue*.5)) /*
+*/ (line plot_sui hour if period == 2, lcolor(red*.5)) 
+twoway (line plot_anx hour if period == 0) (line plot_anx hour if period == 1) (line plot_anx hour if period == 2)
+twoway (line plot_dep hour if period == 0) (line plot_dep hour if period == 1) (line plot_dep hour if period == 2)
+restore
+
+/* With Line Smoother
+twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui hour if period == 0, lcolor(orange)) /*
+*/ (line plot_sui hour if period == 1, lcolor(blue*.1)) (lowess plot_sui hour if period == 1, lcolor(blue))/*
+*/ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
+*/
 
 
 
