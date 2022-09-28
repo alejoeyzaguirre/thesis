@@ -83,7 +83,7 @@ drop if date1 == "2021-10-18"
 * Generamos Filtro: (Ya no usado --> "Usamos Post y no During")
 cap drop filter
 gen filter = 1
-replace filter = 0 if (day > 4 & month == 10 & hour > 15)
+replace filter = 0 if (day == 4 & month == 10 & hour > 15) | (day > 4 & month == 10)
 
 
 * Generamos variables post (Outage de 9:40 a 16:00. Asumo que parte a las 9):
@@ -181,6 +181,29 @@ restore
 graph combine intsui.gph intanx.gph intdep.gph intind.gph
 graph combine socsui.gph socanx.gph socdep.gph socind.gph
 */
+
+* Figura Jeanne:
+
+* Desestacionalizamos por día de la semana y por hora. 
+gen weekday = 0
+replace weekday = mod(day+2,7) if month == 9
+replace weekday = mod(day+4,7) if month == 10
+replace weekday = 7 if weekday == 0
+
+* Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
+cap drop res*
+reg suicide i.weekday i.hour
+predict res_sui, residuals
+reg anxiety i.weekday i.hour
+predict res_anx, residuals
+reg depression i.weekday i.hour
+predict res_dep, residuals
+
+* Teniendo la serie desestacionalizada, procedo a calcular cada serie:
+* Serán 3 series para cada término: pre, post y during.
+gen pre = 
+
+
 
 
 
