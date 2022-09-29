@@ -13,20 +13,21 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/US-Trends"
 ***** Ajuste Datos *************************
 ********************************************
 
-import delimited "$raw/US-Internet/US_internet2.csv", varnames(1) clear
-save "$raw/US-Internet/us_internet",replace
+* Cambiar! Uso us internet de 2021!
+import delimited "$raw/US-Internet/US_internet19.csv", varnames(1) clear
+save "$raw/US-Internet/us_internet19",replace
 
-import delimited "$raw/US-Trends/anxiety.csv", varnames(1) clear
-save "$output/anx",replace
+import delimited "$raw/US-Trends/anx19.csv", varnames(1) clear
+save "$output/anx19",replace
 
-import delimited "$raw/US-Trends/depression.csv", varnames(1) clear
-save "$output/dep",replace
+import delimited "$raw/US-Trends/dep19.csv", varnames(1) clear
+save "$output/dep19",replace
 
 
-import delimited "$raw/US-Trends/suic.csv", clear
-merge m:1 state using "$raw/US-Internet/us_internet", nogen
-merge m:m state date using "$output/anx", nogen
-merge m:m state date using "$output/dep", nogen
+import delimited "$raw/US-Trends/sui19.csv", clear
+merge m:1 state using "$raw/US-Internet/us_internet19", nogen
+merge m:m state date using "$output/anx19", nogen
+merge m:m state date using "$output/dep19", nogen
 
 duplicates report
 duplicates drop
@@ -35,7 +36,7 @@ sort state date
 order state date suicide anxiety depression
 
 * Generamos Fecha:
-gen year = 2021
+gen year = 2019
 gen min = 1
 gen sec = 1
 gen fecha = mdyhms(month,day, year, hour, min, sec)
@@ -73,7 +74,7 @@ gen ef_date = date1+st_hour
 
 * Botamos 18-10 (tiene un solo dato):
 split date, p(" ")
-drop if date1 == "2021-10-18"
+drop if date1 == "2019-03-27"
 
 ******************************************
 ***** Dif-in-Dif *************************
@@ -83,12 +84,13 @@ drop if date1 == "2021-10-18"
 * Generamos Filtro: (Ya no usado --> "Usamos Post y no During")
 cap drop filter
 gen filter = 1
-replace filter = 0 if (day == 4 & month == 10 & hour > 15) | (day > 4 & month == 10)
+replace filter = 0 if (month == 3 & day == 14 & hour > 10) | (month == 3 & day > 14) /*
+*/  | month > 3
 
 
-* Generamos variables post (Outage de 9:40 a 16:00. Asumo que parte a las 9):
+* Generamos variables post:
 gen post = 0
-replace post = 1 if (day == 4 & month == 10 & hour > 8)|(day > 4 & month == 10)
+replace post = 1 if (month == 3 & day == 13 & hour > 10) | (month == 3 & day > 13)
 
 
 * Generamos Index (Levy-2022) --> Multiple Hypothesis.
@@ -123,7 +125,7 @@ set scheme s1color
 * Semana Outage
 preserve
 collapse (mean) suicide anxiety depression index, by(fecha day month hour)
-keep if _n > 337 & _n < 505
+keep if _n > 288 & _n < 457
 gen date = _n / 24
 gen during = .
 replace during = 25 if (day == 4 & month == 10 & hour > 8 & hour < 16)
@@ -134,7 +136,7 @@ restore
 * Semana Pre Outage
 preserve
 collapse (mean) suicide anxiety depression index, by(fecha)
-keep if _n < 337 & _n > 169
+keep if _n < 289 & _n > 120
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
@@ -144,7 +146,7 @@ restore
 * Semana Post Outage
 preserve
 collapse (mean) suicide anxiety depression index, by(fecha)
-keep if _n > 505 & _n < 674
+keep if _n > 456 & _n < 625
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
@@ -153,8 +155,8 @@ restore
 
 grc1leg2 preout.gph outage.gph postout.gph
 
-/* Relación Lineal 
-* Relación Lineal.
+
+/* Relación Lineal.
 preserve
 * Con Internet Use
 collapse (mean) suicide anxiety depression index socialm  internet_use, by(state)
@@ -250,16 +252,16 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 *****************************************
 
 * Corremos el DiD para Suicide:
-reghdfe suicide treatpost , abs(state date ef_hour) vce(cluster state)
+reghdfe suicide treatpost , abs(state date ef_hour) vce(cl state)
 
 * Corremos el DiD para Anxiety:
-reghdfe anxiety treatpost , abs(state date ef_hour) vce(cluster state)
+reghdfe anxiety treatpost , abs(state date ef_hour) vce(cl state)
 
 * Corremos el DiD para Depression:
-reghdfe depression treatpost , abs(state date ef_hour) vce(cluster state)
+reghdfe depression treatpost , abs(state date ef_hour) vce(cl state)
 
 * Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(state date ef_hour) vce(cluster state)
+reghdfe index treatpost , abs(state date ef_hour) vce(cl state)
 
 
 
@@ -270,16 +272,16 @@ reghdfe index treatpost , abs(state date ef_hour) vce(cluster state)
 gen dia_estado = date1 + state
 
 * Corremos el DiD para Suicide:
-reghdfe suicide treatpost , abs(dia_estado date ef_hour) vce(cluster state)
+reghdfe suicide treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 * Corremos el DiD para Anxiety:
-reghdfe anxiety treatpost , abs(dia_estado date ef_hour) vce(cluster state)
+reghdfe anxiety treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 * Corremos el DiD para Depression:
-reghdfe depression treatpost , abs(dia_estado date ef_hour) vce(cluster state)
+reghdfe depression treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 * Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cluster state)
+reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 
 **********************************************
@@ -336,123 +338,28 @@ gen ex_aggr = ((suicide + anxiety + depression)>0)
 * Efecto fijo Shocks Macro c/hora + Hora Efectiva + Estado
 
 * Corremos el DiD para Suicide:
-reghdfe ex_sui treatpost , abs(date state ef_hour) vce(cluster state)
+reghdfe ex_sui treatpost , abs(date state ef_hour) vce(cl state)
 
 * Corremos el DiD para Anxiety:
-reghdfe ex_anx treatpost , abs(date state ef_hour) vce(cluster state)
+reghdfe ex_anx treatpost , abs(date state ef_hour) vce(cl state)
 
 * Corremos el DiD para Depression:
-reghdfe ex_dep treatpost , abs(date state ef_hour) vce(cluster state)
+reghdfe ex_dep treatpost , abs(date state ef_hour) vce(cl state)
 
 * Corremos el DiD para Aggregate:
-reghdfe ex_aggr treatpost , abs(date state ef_hour) vce(cluster state)
+reghdfe ex_aggr treatpost , abs(date state ef_hour) vce(cl state)
 
 * Efecto fijo Shocks Macro c/hora + Hora Efectiva + Shocks Idiosincráticos State
 
 * Corremos el DiD para Suicide:
-reghdfe ex_sui treatpost , abs(date dia_estado ef_hour) vce(cluster state)
+reghdfe ex_sui treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 * Corremos el DiD para Anxiety:
-reghdfe ex_anx treatpost , abs(date dia_estado ef_hour) vce(cluster state)
+reghdfe ex_anx treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 * Corremos el DiD para Depression:
-reghdfe ex_dep treatpost , abs(date dia_estado ef_hour) vce(cluster state)
+reghdfe ex_dep treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 * Corremos el DiD para Aggregate:
-reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cluster state)
+reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
-
-/*
-********************************************************************************
-********************** USING INTERNET USE AS TREAT *****************************
-********************************************************************************
-
-
-* Generamos variable treat*post:
-cap drop treatpost
-gen treatpost = internet_use*post
-
-
-
-************************************************
-************************************************ Efecto Fijo Estado y Hora!
-************************************************
-
-
-* Corremos el DiD para Suicide:
-reghdfe suicide treatpost , abs(state ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe anxiety treatpost , abs(state ef_hour) vce(cluster state)
-
-* Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(state ef_hour) vce(cluster state)
-
-
-*****************************************
-***************************************** Efecto Fijo Fecha (con hora) y Estado!
-*****************************************
-
-* Corremos el DiD para Suicide:
-reghdfe suicide treatpost , abs(state date ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe anxiety treatpost , abs(state date ef_hour) vce(cluster state)
-
-* Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(state date ef_hour) vce(cluster state)
-
-
-
-**********************************************
-********************************************** Efecto Fijo Dia-Estado y Momento!
-**********************************************
-
-* Corremos el DiD para Suicide:
-reghdfe suicide treatpost , abs(dia_estado date ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe anxiety treatpost , abs(dia_estado date ef_hour) vce(cluster state)
-
-* Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cluster state)
-
-
-***********************************************************
-*********************************************************** Logaritmizando todo!
-***********************************************************
-* Efecto Fijo Fecha-Hora (shocks macro), Estado y Hora Efectiva.
-cap drop ln_treatpost
-gen ln_internet = ln(internet_use)
-gen ln_treatpost = ln_internet * post
-
-* Corremos el DiD para Suicide:
-reghdfe ln_sui ln_treatpost , abs(date state ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe ln_anx ln_treatpost , abs(date state ef_hour) vce(cluster state)
-
-* Corremos el DiD para Index (Levy):
-reghdfe index treatpost , abs(date state ef_hour) vce(cluster state)
-
-
-***************************************************************
-*************************************************************** Margen Extensivo
-***************************************************************
-
-* Efecto fijo Shocks Macro c/hora + Hora Efectiva + Estado
-
-* Corremos el DiD para Suicide:
-reghdfe ex_sui treatpost , abs(date state ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe ex_anx treatpost , abs(date state ef_hour) vce(cluster state)
-
-* Efecto fijo Shocks Macro c/hora + Hora Efectiva + Shocks Idiosincráticos State
-
-* Corremos el DiD para Suicide:
-reghdfe ex_sui treatpost , abs(date dia_estado ef_hour) vce(cluster state)
-
-* Corremos el DiD para Anxiety:
-reghdfe ex_anx treatpost , abs(date dia_estado ef_hour) vce(cluster state)
-*/
