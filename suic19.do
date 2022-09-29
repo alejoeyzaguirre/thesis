@@ -117,7 +117,7 @@ gen treatpost = socialm*post
 *drop if filter == 0
 
 
-/********************************************************************************
+********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -133,7 +133,7 @@ gen date = _n / 24
 gen during = .
 replace during = 20 if (month == 3 & day == 13 & hour > 10) | (month == 3 & day == 14 & hour < 11)
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save outage, replace
+graph save "plots/outage19.gph", replace
 restore
 
 * Semana Pre Outage
@@ -143,7 +143,7 @@ keep if _n < 289 & _n > 120
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save preout, replace
+graph save "plots/preout19.gph", replace
 restore
 
 * Semana Post Outage
@@ -153,39 +153,28 @@ keep if _n > 456 & _n < 625
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save postout, replace
+graph save "plots/postout19.gph", replace
 restore
 
-grc1leg2 preout.gph outage.gph postout.gph
+grc1leg2 "plots/preout19.gph" "plots/outage19.gph" "plots/postout19.gph"
 
 
-/* Relación Lineal.
+*Relación Lineal.
 preserve
-* Con Internet Use
-collapse (mean) suicide anxiety depression index socialm  internet_use, by(state)
-twoway (scatter suicide internet_use) (lfit suicide internet_use)
-graph save intsui, replace
-twoway (scatter anxiety internet_use) (lfit anxiety internet_use)
-graph save intanx, replace
-twoway (scatter depression internet_use) (lfit depression internet_use)
-graph save intdep, replace
-twoway (scatter index internet_use) (lfit index internet_use)
-graph save intind, replace
+collapse (mean) suicide anxiety depression index socialm, by(state)
 * Ahora Social Media
 twoway (scatter suicide socialm) (lfit suicide socialm)
-graph save socsui, replace
+graph save "plots/socsui19.gph", replace
 twoway (scatter anxiety socialm) (lfit anxiety socialm)
-graph save socanx, replace
+graph save "plots/socanx19.gph", replace
 twoway (scatter depression socialm) (lfit depression socialm)
-graph save socdep, replace
+graph save "plots/socdep19.gph", replace
 twoway (scatter index socialm) (lfit index socialm)
-graph save socind, replace
-
+graph save "plots/socind19.gph", replace
 restore
 
-graph combine intsui.gph intanx.gph intdep.gph intind.gph
-graph combine socsui.gph socanx.gph socdep.gph socind.gph
-*/
+graph combine "plots/socsui19.gph" "plots/socanx19.gph" "plots/socdep19.gph" "plots/socind19.gph"
+
 
 
 * Figura Jeanne:

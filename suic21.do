@@ -134,7 +134,7 @@ gen date = _n / 24
 gen during = .
 replace during = 25 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save outage, replace
+graph save "plots/outage.gph", replace
 restore
 
 * Semana Pre Outage
@@ -144,7 +144,7 @@ keep if _n < 337 & _n > 169
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save preout, replace
+graph save "plots/preout.gph", replace
 restore
 
 * Semana Post Outage
@@ -154,38 +154,27 @@ keep if _n > 505 & _n < 674
 gen date = _n / 24 
 gen during = .
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
-graph save postout, replace
+graph save "plots/postout.gph", replace
 restore
 
-grc1leg2 preout.gph outage.gph postout.gph
+grc1leg2 "plots/outage.gph" "plots/preout.gph" "plots/postout.gph"
 
-/* Relación Lineal
-* Relación Lineal.
+* Relación Lineal
 preserve
-* Con Internet Use
-collapse (mean) suicide anxiety depression index socialm  internet_use, by(state)
-twoway (scatter suicide internet_use) (lfit suicide internet_use)
-graph save intsui, replace
-twoway (scatter anxiety internet_use) (lfit anxiety internet_use)
-graph save intanx, replace
-twoway (scatter depression internet_use) (lfit depression internet_use)
-graph save intdep, replace
-twoway (scatter index internet_use) (lfit index internet_use)
-graph save intind, replace
 * Ahora Social Media
+collapse (mean) suicide anxiety depression index socialm, by(state)
 twoway (scatter suicide socialm) (lfit suicide socialm)
-graph save socsui, replace
+graph save "plots/socsui.gph", replace
 twoway (scatter anxiety socialm) (lfit anxiety socialm)
-graph save socanx, replace
+graph save "plots/socanx.gph", replace
 twoway (scatter depression socialm) (lfit depression socialm)
-graph save socdep, replace
+graph save "plots/socdep.gph", replace
 twoway (scatter index socialm) (lfit index socialm)
-graph save socind, replace
+graph save "plots/socind.gph", replace
 
 restore
 
-graph combine intsui.gph intanx.gph intdep.gph intind.gph
-graph combine socsui.gph socanx.gph socdep.gph socind.gph
+graph combine "plots/socsui.gph" "plots/socanx.gph" "plots/socdep.gph" "plots/socind.gph"
 */
 
 
@@ -265,7 +254,7 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 
 
 *********** Histograms
-*preserve
+preserve
 sum socialm, d
 gen status = (socialm > 74.7)
 collapse (mean) suicide anxiety depression index socialm, by(date day hour status)
