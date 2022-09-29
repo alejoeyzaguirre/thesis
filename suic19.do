@@ -17,7 +17,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/US-Trends"
 ********************************************************************************
 
 
-* Cambiar! Uso us internet de 2021!
+* Social Media Use from NTIA Nov. 2019
 import delimited "$raw/US-Internet/US_internet19.csv", varnames(1) clear
 save "$raw/US-Internet/us_internet19",replace
 
@@ -125,6 +125,8 @@ gen treatpost = socialm*post
 
 set scheme s1color
 
+* 1. RAW TRENDS PER WEEK
+
 * Semana Outage
 preserve
 collapse (mean) suicide anxiety depression index, by(fecha day month hour)
@@ -159,7 +161,8 @@ restore
 grc1leg2 "plots/preout19.gph" "plots/outage19.gph" "plots/postout19.gph"
 
 
-*Relación Lineal.
+* 2. LINEAR RELATIONSHIP WITH TREATMENT
+
 preserve
 collapse (mean) suicide anxiety depression index socialm, by(state)
 * Ahora Social Media
@@ -177,7 +180,8 @@ graph combine "plots/socsui19.gph" "plots/socanx19.gph" "plots/socdep19.gph" "pl
 
 
 
-* Figura Jeanne:
+* 3. SEASONALLY ADJUSTED TRENDS PER DAY
+
 set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
 gen weekday = 0
@@ -242,13 +246,9 @@ restore
 grc1leg2 "plots/dsui19.gph" "plots/danx19.gph" "plots/ddep19.gph"
 
 
-/* With Line Smoother
-twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui hour if period == 0, lcolor(orange)) /*
-*/ (line plot_sui hour if period == 1, lcolor(blue*.1)) (lowess plot_sui hour if period == 1, lcolor(blue))/*
-*/ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
-*/
 
-*********** Histograms
+* 4. HISTOGRAMS PER HIGH AND LOW SOCIAL MEDIA PENETRATION
+
 preserve
 sum socialm, d
 gen status = (socialm > 73.8)
