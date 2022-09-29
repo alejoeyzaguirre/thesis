@@ -101,7 +101,7 @@ gen st_dep = (ln_dep - r(mean)) / r(sd)
 gen pre_index = (st_anx + st_sui + st_dep) / 3
 egen index = std(pre_index)
 
-/*
+/* Tratamiento Binario
 * Tratamiento Binario
 gen high = (socialm > 74.7)
 gen treatpost = high * post
@@ -115,7 +115,7 @@ gen treatpost = socialm*post
 *drop if filter == 0
 
 
-******************************************
+/******************************************
 ***** FIGURAS ****************************
 ******************************************
 set scheme s1color
@@ -182,7 +182,11 @@ graph combine intsui.gph intanx.gph intdep.gph intind.gph
 graph combine socsui.gph socanx.gph socdep.gph socind.gph
 */
 
-* Figura Jeanne:
+
+
+******** Desestacionalizando Comparission 
+
+
 set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
 gen weekday = 0
@@ -252,6 +256,18 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 */ (line plot_sui hour if period == 1, lcolor(blue*.1)) (lowess plot_sui hour if period == 1, lcolor(blue))/*
 */ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
 */
+
+
+*/
+
+*********** Histograms
+*preserve
+
+sum socialm, d
+gen status = (socialm > 73.8)
+collapse (mean) suicide anxiety depression index socialm, by(date status)
+
+restore
 
 
 

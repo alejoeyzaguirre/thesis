@@ -9,9 +9,12 @@ cd "/Users/alejoeyzaguirre/Desktop/Tesis/Datos"
 global raw "/Users/alejoeyzaguirre/Desktop/Tesis/Datos" 
 global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/US-Trends" 
 
-********************************************
-***** Ajuste Datos *************************
-********************************************
+********************************************************************************
+
+***************************** Ajuste Datos *************************************
+
+********************************************************************************
+
 
 * Cambiar! Uso us internet de 2021!
 import delimited "$raw/US-Internet/US_internet19.csv", varnames(1) clear
@@ -76,10 +79,6 @@ gen ef_date = date1+st_hour
 split date, p(" ")
 drop if date1 == "2019-03-27"
 
-******************************************
-***** Dif-in-Dif *************************
-******************************************
-
 
 * Generamos Filtro: (Ya no usado --> "Usamos Post y no During")
 cap drop filter
@@ -118,7 +117,9 @@ gen treatpost = socialm*post
 
 
 ********************************************************************************
-***** COMIENZO FIGURAS *********************************************************
+
+***************************** FIGURAS ******************************************
+
 ********************************************************************************
 
 set scheme s1color
@@ -257,8 +258,15 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 */ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
 */
 
+
+
+
+
+
 ********************************************************************************
-********** FIN FIGURAS *********************************************************
+
+************************* Diferencias-en-Diferencias ***************************
+
 ********************************************************************************
 
 
