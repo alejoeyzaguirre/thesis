@@ -153,7 +153,7 @@ restore
 
 grc1leg2 preout.gph outage.gph postout.gph
 
-/* Relación Lineal 
+/* Relación Lineal
 * Relación Lineal.
 preserve
 * Con Internet Use
@@ -189,7 +189,7 @@ gen weekday = 0
 replace weekday = mod(day+2,7) if month == 9
 replace weekday = mod(day+4,7) if month == 10
 replace weekday = 7 if weekday == 0
-bys date: gen num_fecha = _n
+bys state: gen num_fecha = _n
 sort state date
 order state date suicide anxiety depression
 

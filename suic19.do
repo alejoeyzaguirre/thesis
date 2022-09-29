@@ -188,10 +188,10 @@ graph combine socsui.gph socanx.gph socdep.gph socind.gph
 set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
 gen weekday = 0
-replace weekday = mod(day+2,7) if month == 9
-replace weekday = mod(day+4,7) if month == 10
+replace weekday = mod(day+4,7) if month == 3
+replace weekday = mod(day+4,7) if month == 2
 replace weekday = 7 if weekday == 0
-bys date: gen num_fecha = _n
+bys state: gen num_fecha = _n
 sort state date
 order state date suicide anxiety depression
 
@@ -207,8 +207,8 @@ predict res_dep, residuals
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
 * Serán 3 series para cada término: pre, post y during.
 gen period = 0
-replace period = 1 if day ==4 & month == 10
-replace period = 2 if day > 4 & month == 10
+replace period = 1 if day ==13 & month == 3
+replace period = 2 if day > 13 & month == 3
 egen plot_sui = mean(res_sui), by(period hour)
 egen plot_anx = mean(res_anx), by(period hour)
 egen plot_dep = mean(res_dep), by(period hour)
@@ -219,8 +219,8 @@ preserve
 duplicates drop period hour, force
 gen up = .
 gen down = .
-replace up = 3 if (day == 4 & month == 10 & hour > 8 & hour < 16)
-replace down = -7 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace up = 3 if (day == 13 & month == 3 & hour > 10)
+replace down = -7 if (day == 13 & month == 3 & hour > 10)
 
 * Suicide
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_sui hour if period == 0, lcolor(orange*.5)) /*
