@@ -9,6 +9,7 @@ cd "/Users/alejoeyzaguirre/Desktop/Tesis/Datos"
 global raw "/Users/alejoeyzaguirre/Desktop/Tesis/Datos" 
 global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/US-Trends" 
 
+
 ********************************************************************************
 
 ***************************** Ajuste Datos *************************************
@@ -116,7 +117,7 @@ gen treatpost = socialm*post
 *drop if filter == 0
 
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -258,8 +259,19 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 */ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
 */
 
+*********** Histograms
+preserve
+sum socialm, d
+gen status = (socialm > 73.8)
+collapse (mean) suicide anxiety depression index socialm, by(date day hour status)
+sort status date
+* Only compare during outage observations:
+keep if (day == 13 & hour > 10)
+collapse (mean) suicide anxiety depression, by(status)
+statplot suicide anxiety depression , over(status) vertical legend(off)
+restore
 
-
+*/
 
 
 
