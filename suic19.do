@@ -128,7 +128,7 @@ collapse (mean) suicide anxiety depression index, by(fecha day month hour)
 keep if _n > 288 & _n < 457
 gen date = _n / 24
 gen during = .
-replace during = 25 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace during = 20 if (month == 3 & day == 13 & hour > 10) | (month == 3 & day == 14 & hour < 11)
 twoway (area during date, color(gs14))(line suicide date)(line anxiety date)(line depression date) 
 graph save outage, replace
 restore
