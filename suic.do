@@ -256,17 +256,18 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 */ (line plot_sui hour if period == 1, lcolor(blue*.1)) (lowess plot_sui hour if period == 1, lcolor(blue))/*
 */ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
 */
-
-
 */
 
 *********** Histograms
 *preserve
-
 sum socialm, d
-gen status = (socialm > 73.8)
-collapse (mean) suicide anxiety depression index socialm, by(date status)
-
+gen status = (socialm > 74.7)
+collapse (mean) suicide anxiety depression index socialm, by(date day hour status)
+sort status date
+* Only compare during outage observations:
+keep if (day == 4 & hour > 8 & hour < 16)
+collapse (mean) suicide anxiety depression, by(status)
+statplot suicide anxiety depression , over(status) vertical legend(off)
 restore
 
 
