@@ -195,11 +195,11 @@ order state date suicide anxiety depression
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
-reg suicide i.weekday i.ef_hour i.num_fecha
+qui reg suicide i.weekday i.ef_hour i.num_fecha
 predict res_sui, residuals
-reg anxiety i.weekday i.ef_hour i.num_fecha
+qui reg anxiety i.weekday i.ef_hour i.num_fecha
 predict res_anx, residuals
-reg depression i.weekday i.ef_hour i.num_fecha
+qui reg depression i.weekday i.ef_hour i.num_fecha
 predict res_dep, residuals
 
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
@@ -217,25 +217,35 @@ preserve
 duplicates drop period hour, force
 gen up = .
 gen down = .
-replace up = 3 if (day == 4 & month == 10 & hour > 8 & hour < 16)
-replace down = -7 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 
 * Suicide
+replace up = 4 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace down = -4.2 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_sui hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_sui hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_sui hour if period == 2, lcolor(red*.5)) 
+graph save "plots/dsui21.gph", replace
 
 * Anxiety
+replace up = 4.5 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace down = -3 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_anx hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_anx hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_anx hour if period == 2, lcolor(red*.5)) 
+graph save "plots/danx21.gph", replace
 
 * Depression
+replace up = 4 if (day == 4 & month == 10 & hour > 8 & hour < 16)
+replace down = -4 if (day == 4 & month == 10 & hour > 8 & hour < 16)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_dep hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_dep hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_dep hour if period == 2, lcolor(red*.5)) 
+graph save "plots/ddep21.gph", replace
 
 restore
+
+grc1leg2 "plots/dsui21.gph" "plots/danx21.gph" "plots/ddep21.gph"
+
 
 /* With Line Smoother
 twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui hour if period == 0, lcolor(orange)) /*

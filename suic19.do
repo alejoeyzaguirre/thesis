@@ -117,9 +117,10 @@ gen treatpost = socialm*post
 *drop if filter == 0
 
 
-******************************************
-***** FIGURAS ****************************
-******************************************
+********************************************************************************
+***** COMIENZO FIGURAS *********************************************************
+********************************************************************************
+
 set scheme s1color
 
 * Semana Outage
@@ -184,6 +185,7 @@ graph combine intsui.gph intanx.gph intdep.gph intind.gph
 graph combine socsui.gph socanx.gph socdep.gph socind.gph
 */
 
+
 * Figura Jeanne:
 set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
@@ -197,11 +199,11 @@ order state date suicide anxiety depression
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
-reg suicide i.weekday i.ef_hour i.num_fecha
+qui reg suicide i.weekday i.ef_hour i.num_fecha
 predict res_sui, residuals
-reg anxiety i.weekday i.ef_hour i.num_fecha
+qui reg anxiety i.weekday i.ef_hour i.num_fecha
 predict res_anx, residuals
-reg depression i.weekday i.ef_hour i.num_fecha
+qui reg depression i.weekday i.ef_hour i.num_fecha
 predict res_dep, residuals
 
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
@@ -219,31 +221,45 @@ preserve
 duplicates drop period hour, force
 gen up = .
 gen down = .
-replace up = 3 if (day == 13 & month == 3 & hour > 10)
-replace down = -7 if (day == 13 & month == 3 & hour > 10)
 
 * Suicide
+replace up = 4 if (day == 13 & month == 3 & hour > 10)
+replace down = -6 if (day == 13 & month == 3 & hour > 10)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_sui hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_sui hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_sui hour if period == 2, lcolor(red*.5)) 
+graph save "plots/dsui19.gph", replace
 
 * Anxiety
+replace up = 5 if (day == 13 & month == 3 & hour > 10)
+replace down = -3 if (day == 13 & month == 3 & hour > 10)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_anx hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_anx hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_anx hour if period == 2, lcolor(red*.5)) 
+graph save "plots/danx19.gph", replace
 
 * Depression
+replace up = 4 if (day == 13 & month == 3 & hour > 10)
+replace down = -5 if (day == 13 & month == 3 & hour > 10)
 twoway (rarea up down hour if period == 1, sort color(gs14*.5)) (line plot_dep hour if period == 0, lcolor(orange*.5)) /*
 */ (line plot_dep hour if period == 1, lcolor(blue*.5)) /*
 */ (line plot_dep hour if period == 2, lcolor(red*.5)) 
+graph save "plots/ddep19.gph", replace
 
 restore
+
+grc1leg2 "plots/dsui19.gph" "plots/danx19.gph" "plots/ddep19.gph"
+
 
 /* With Line Smoother
 twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui hour if period == 0, lcolor(orange)) /*
 */ (line plot_sui hour if period == 1, lcolor(blue*.1)) (lowess plot_sui hour if period == 1, lcolor(blue))/*
 */ (line plot_sui hour if period == 2, lcolor(red*.1)) (lowess plot_sui hour if period == 2, lcolor(red))
 */
+
+********************************************************************************
+********** FIN FIGURAS *********************************************************
+********************************************************************************
 
 
 
