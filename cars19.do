@@ -16,6 +16,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Car Accidents"
 
 ********************************************************************************
 
+set maxvar 10000
 
 import delimited "$output/ts19.csv", delimiter(comma) varnames(1) clear
 split ts, p(" ")
@@ -111,28 +112,6 @@ gen treat = 0
 replace treat = 1 if age < 35 // High social media penetration sería para menores de 35.
 */
 
-* Generamos variable Treat Continuo (Usando Datos Fundación País Digital):
-* Porcentaje de Uso de Internet para Entretenimiento 2020 (Proyección).
-/*
-drop if cohort == 0 // Conductores de entre 0 y 10 años.
-gen treat = 0
-replace treat = 0.894 if cohort == 1
-replace treat = 0.881 if cohort == 2
-replace treat = 0.895 if cohort == 3
-replace treat = 0.910 if cohort == 4
-replace treat = 0.937 if cohort == 5
-replace treat = 0.924 if cohort == 6
-replace treat = 0.908 if cohort == 7
-replace treat = 0.850 if cohort == 8
-replace treat = 0.823 if cohort == 9
-replace treat = 0.782 if cohort == 10
-replace treat = 0.789 if cohort == 11
-replace treat = 0.738 if cohort == 12
-replace treat = 0.687 if cohort == 13
-replace treat = 0.701 if cohort == 14
-replace treat = 0.606 if cohort == 15
-replace treat = 0.622 if cohort > 15
-*/
 
 * Generamos variable Treat Continuo (Usando Datos CASEN 2017):
 * Porcentaje de Uso de Internet para Entretenimiento 2017.
@@ -217,14 +196,82 @@ restore
 grc1leg2 preout2.gph outage2.gph postout2.gph
 
 
-
-* Relación Lineal.
+* 2. LINEAR RELATIONSHIP
 preserve
 collapse (mean) outcome treat, by(cohort)
 twoway (scatter outcome treat) (lfit outcome treat)
 restore
-*/
 
+
+* 3. SEASONALLY ADJUSTED TRENDS PER DAY
+
+* Desestacionalizamos por día de la semana y por hora. 
+gen diasemana = 0
+replace diasemana = mod(dia+1,7) if mes == 1
+replace diasemana = mod(dia+4,7) if mes == 2
+replace diasemana = mod(dia+4,7) if mes == 3
+replace diasemana = mod(dia+0,7) if mes == 4
+replace diasemana = mod(dia+2,7) if mes == 5
+replace diasemana = mod(dia+5,7) if mes == 6
+replace diasemana = mod(dia+0,7) if mes == 7
+replace diasemana = mod(dia+3,7) if mes == 8
+replace diasemana = mod(dia+6,7) if mes == 9
+replace diasemana = mod(dia+1,7) if mes == 10
+replace diasemana = mod(dia+4,7) if mes == 11
+replace diasemana = mod(dia+6,7) if mes == 12
+replace diasemana = 7 if diasemana == 0
+
+bys cohort: gen num_fecha = _n
+sort cohort fecha
+order cohort fecha outcome
+
+replace num_fecha = round(num_fecha/6)
+
+* Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
+cap drop res*
+qui reg outcome i.diasemana i.hora i.date
+predict res_out, residuals
+
+* Teniendo la serie desestacionalizada, procedo a calcular cada serie:
+* Serán 3 series para cada término: pre, post y during.
+gen period = 0
+replace period = 1 if dia ==13 & mes == 3
+replace period = 2 if dia > 13 & mes == 3 | mes > 3
+egen plot_out = mean(res_out), by(period hora)
+
+
+preserve
+
+duplicates drop period hora, force
+gen up = .
+gen down = .
+
+* Plot
+replace up = 1 if (mes == 3 & dia == 13 & hora > 12)
+replace down = -1 if (mes == 3 & dia == 13 & hora > 12)
+twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
+*/ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
+*/ (line plot_out hora if period == 2, lcolor(red*.5)) 
+graph save "plots/dcar21.gph", replace
+
+restore
+
+
+* 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
+
+preserve
+sum treat, d
+gen status = (treat >= 0.732)
+collapse (mean) outcome, by(fecha dia mes hora status)
+sort status fecha
+* Only compare during outage observations:
+keep if (dia == 13 & mes == 3 & hora > 10)
+collapse (mean) outcome, by(status)
+statplot outcome , over(status) vertical legend(off)
+restore
+
+
+*/
 
 
 ********************************************************************************

@@ -137,31 +137,6 @@ replace treat = 0.606 if cohort == 15
 replace treat = 0.622 if cohort > 15
 
 
-
-* Generamos variable Treat Continuo (Usando Datos CASEN 2017):
-* Porcentaje de Uso de Internet para Entretenimiento 2017.
-/*
-drop if cohort == 0 // Conductores de entre 0 y 4 años.
-gen treat = 0
-replace treat = 0.868 if cohort == 1
-replace treat = 0.856 if cohort == 2
-replace treat = 0.870 if cohort == 3
-replace treat = 0.875 if cohort == 4
-replace treat = 0.885 if cohort == 5
-replace treat = 0.859 if cohort == 6
-replace treat = 0.835 if cohort == 7
-replace treat = 0.793 if cohort == 8
-replace treat = 0.764 if cohort == 9
-replace treat = 0.732 if cohort == 10
-replace treat = 0.728 if cohort == 11
-replace treat = 0.685 if cohort == 12
-replace treat = 0.651 if cohort == 13
-replace treat = 0.649 if cohort == 14
-replace treat = 0.586 if cohort == 15
-replace treat = 0.602 if cohort > 15
-*/
-
-
 * Generamos variable treat*post:
 gen treatpost = treat*post
 
@@ -269,14 +244,27 @@ duplicates drop period hora, force
 gen up = .
 gen down = .
 
-* Suicide
-replace up = 2 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
-replace down = -2 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+* Plot
+replace up = 1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+replace down = -1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
 */ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
 */ (line plot_out hora if period == 2, lcolor(red*.5)) 
-graph save "plots/dsui19.gph", replace
+graph save "plots/dcar21.gph", replace
 
+restore
+
+
+* 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
+preserve
+sum treat, d
+gen status = (treat >= 0.789) // High penetration above median.
+collapse (mean) outcome, by(fecha dia mes hora status)
+sort status fecha
+* Only compare during outage observations:
+keep if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+collapse (mean) outcome, by(status)
+statplot outcome , over(status) vertical legend(off)
 restore
 
 
