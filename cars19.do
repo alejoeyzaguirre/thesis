@@ -258,29 +258,21 @@ restore
 
 
 * 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
-
-preserve
-sum treat, d
-gen status = (treat >= 0.732)
-collapse (mean) outcome, by(fecha dia mes hora status)
-sort status fecha
-* Only compare during outage observations:
-keep if (dia == 13 & mes == 3 & hora > 10)
-collapse (mean) outcome, by(status)
-statplot outcome , over(status) vertical legend(off)
-restore
-
 preserve
 sum treat, d
 gen status = (treat >= 0.732) // High penetration above median.
-sum outcome
-gen av_out = r(mean)
-collapse (mean) outcome av_out, by(fecha dia mes hora status)
+sum outcome if status == 0
+gen av_out0 = r(mean)
+sum outcome if status == 1
+gen av_out1 = r(mean)
+collapse (mean) outcome av_out0 av_out1, by(fecha dia mes hora status)
 sort status fecha
 * Only compare during outage observations:
 keep if (dia == 13 & mes == 3 & hora > 10)
-collapse (mean) outcome av_out, by(status)
-gen rel_out = outcome / av_out
+collapse (mean) outcome av_out0 av_out1, by(status)
+gen rel_out = 0
+replace rel_out = outcome / av_out0 if status == 0
+replace rel_out = outcome / av_out1 if status == 1
 statplot rel_out , over(status) vertical legend(off)
 restore
 

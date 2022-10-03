@@ -117,7 +117,7 @@ gen treatpost = socialm*post
 * Botamos observaciones post apagón:
 *drop if filter == 0
 
-* Para desestacionalizar más abajo
+* Para desestacionalizar más abajo:
 gen weekday = 0
 replace weekday = mod(day+4,7) if month == 3
 replace weekday = mod(day+4,7) if month == 2
@@ -127,7 +127,7 @@ sort state date
 order state date suicide anxiety depression
 
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -402,8 +402,108 @@ reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 
 
-cap drop ln*
+******************** Efecto Fijo Moment, Estado y Effective Hour 
 
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 12 if _n < 24
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 1/25 {
+	gen l`i' = 0
+	replace l`i' = socialm if num_fecha == `i' -12 + 349
+}
+
+* Corremos el Event Studies para Suicide:
+reghdfe suicide l* , abs(date state ef_hour) vce(cl state)
+gen estud_sui = 0
+gen dnic_sui = 0
+gen upic_sui = 0
+forvalues i = 1/24 {
+	replace estud_sui = _b[l`i'] if _n == `i'
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_sui dnic_sui cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_sui cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+* Corremos el Event Studies para Anxiety:
+reghdfe anxiety l* , abs(date state ef_hour) vce(cl state)
+gen estud_anx = 0
+gen dnic_anx = 0
+gen upic_anx = 0
+forvalues i = 1/24 {
+	replace estud_anx = _b[l`i'] if _n == `i'
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_anx dnic_anx cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_anx cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+* Corremos el Event Studies para Depression:
+reghdfe depression l* , abs(date state ef_hour) vce(cl state)
+gen estud_dep = 0
+gen dnic_dep = 0
+gen upic_dep = 0
+forvalues i = 1/24 {
+	replace estud_dep = _b[l`i'] if _n == `i'
+	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_dep dnic_dep cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_dep cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+* Corremos el Event Studies para Index (Levy):
+reghdfe index l* , abs(date state ef_hour) vce(cl state)
+gen estud_ind = 0
+gen dnic_ind = 0
+gen upic_ind = 0
+forvalues i = 1/24 {
+	replace estud_ind = _b[l`i'] if _n == `i'
+	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_ind dnic_ind cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_ind cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
+
+
+cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 12 if _n < 24
 gen Zero = 0
 
@@ -429,28 +529,70 @@ twoway ///
 fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line estud_sui cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Forward Months", size(medsmall)) ///
-note("Notes: 90 percent confidence bands") ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
 
 
 * Corremos el Event Studies para Anxiety:
 reghdfe anxiety l* , abs(date dia_estado ef_hour) vce(cl state)
+gen estud_anx = 0
+gen dnic_anx = 0
+gen upic_anx = 0
+forvalues i = 1/24 {
+	replace estud_anx = _b[l`i'] if _n == `i'
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_anx dnic_anx cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_anx cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
 
 * Corremos el Event Studies para Depression:
 reghdfe depression l* , abs(date dia_estado ef_hour) vce(cl state)
+gen estud_dep = 0
+gen dnic_dep = 0
+gen upic_dep = 0
+forvalues i = 1/24 {
+	replace estud_dep = _b[l`i'] if _n == `i'
+	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
 
-* Corremos el Event Studies para Depression:
+twoway ///
+(rarea upic_dep dnic_dep cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_dep cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+* Corremos el Event Studies para Index (Levy):
 reghdfe index l* , abs(date dia_estado ef_hour) vce(cl state)
+gen estud_ind = 0
+gen dnic_ind = 0
+gen upic_ind = 0
+forvalues i = 1/24 {
+	replace estud_ind = _b[l`i'] if _n == `i'
+	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
 
-
-/*
-encode state, gen(id)
-xtset id num_fecha
-qui xtreg suicide treatpost i.ef_hour i.num_fecha i.id, fe vce(cl id) 
-est table, keep(treatpost) b se p
-
-xtreg suicide 
-
-
+twoway ///
+(rarea upic_ind dnic_ind cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_ind cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
