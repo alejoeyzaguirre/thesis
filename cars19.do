@@ -151,8 +151,28 @@ gen horagrupo = st_cohort + hora1
 replace outcome = 0 if outcome == .
 
 
+* Para poder desestacionalizar en el futuro: 
+gen diasemana = 0
+replace diasemana = mod(dia+1,7) if mes == 1
+replace diasemana = mod(dia+4,7) if mes == 2
+replace diasemana = mod(dia+4,7) if mes == 3
+replace diasemana = mod(dia+0,7) if mes == 4
+replace diasemana = mod(dia+2,7) if mes == 5
+replace diasemana = mod(dia+5,7) if mes == 6
+replace diasemana = mod(dia+0,7) if mes == 7
+replace diasemana = mod(dia+3,7) if mes == 8
+replace diasemana = mod(dia+6,7) if mes == 9
+replace diasemana = mod(dia+1,7) if mes == 10
+replace diasemana = mod(dia+4,7) if mes == 11
+replace diasemana = mod(dia+6,7) if mes == 12
+replace diasemana = 7 if diasemana == 0
 
-********************************************************************************
+bys cohort: gen num_fecha = _n
+sort cohort fecha
+order cohort fecha outcome
+
+
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -204,32 +224,11 @@ restore
 
 
 * 3. SEASONALLY ADJUSTED TRENDS PER DAY
-
-* Desestacionalizamos por día de la semana y por hora. 
-gen diasemana = 0
-replace diasemana = mod(dia+1,7) if mes == 1
-replace diasemana = mod(dia+4,7) if mes == 2
-replace diasemana = mod(dia+4,7) if mes == 3
-replace diasemana = mod(dia+0,7) if mes == 4
-replace diasemana = mod(dia+2,7) if mes == 5
-replace diasemana = mod(dia+5,7) if mes == 6
-replace diasemana = mod(dia+0,7) if mes == 7
-replace diasemana = mod(dia+3,7) if mes == 8
-replace diasemana = mod(dia+6,7) if mes == 9
-replace diasemana = mod(dia+1,7) if mes == 10
-replace diasemana = mod(dia+4,7) if mes == 11
-replace diasemana = mod(dia+6,7) if mes == 12
-replace diasemana = 7 if diasemana == 0
-
-bys cohort: gen num_fecha = _n
-sort cohort fecha
-order cohort fecha outcome
-
-replace num_fecha = round(num_fecha/6)
+gen num_fecha2 = round(num_fecha/6)
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
-qui reg outcome i.diasemana i.hora i.date
+qui reg outcome i.diasemana i.hora i.num_fecha2
 predict res_out, residuals
 
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
@@ -332,3 +331,74 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
 
 
 
+********************************************************************************
+
+****************************** Event Studies ***********************************
+
+********************************************************************************
+
+
+******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
+
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 24 if _n < 49
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 1/49 {
+	gen l`i' = 0
+	replace l`i' = treat if num_fecha == `i' -24 + 1718
+}
+
+* Corremos el Event Studies para Outcome "Car Accidents":
+reghdfe outcome l* , abs(cohort diahora) vce(cl cohort)
+gen estud = 0
+gen dnic = 0
+gen upic = 0
+forvalues i = 1/49 {
+	replace estud = _b[l`i'] if _n == `i'
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic dnic cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+******************** Efecto Fijo Dia x Cohorte y Moment (Dia x Hora)
+
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 24 if _n < 49
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 1/49 {
+	gen l`i' = 0
+	replace l`i' = treat if num_fecha == `i' -24 + 1718
+}
+
+* Corremos el Event Studies para Outcome "Car Accidents":
+reghdfe outcome l* , abs(horagrupo diahora) vce(cl cohort)
+gen estud = 0
+gen dnic = 0
+gen upic = 0
+forvalues i = 1/49 {
+	replace estud = _b[l`i'] if _n == `i'
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic dnic cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
