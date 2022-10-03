@@ -41,10 +41,11 @@ order state date suicide anxiety depression
 
 * Generamos Fecha:
 gen year = 2019
-gen min = 1
-gen sec = 1
+gen min = 0
+gen sec = 0
 gen fecha = mdyhms(month,day, year, hour, min, sec)
 format fecha %tc
+*xtset fecha
 
 
 * Logaritmizamos variables:
@@ -116,6 +117,15 @@ gen treatpost = socialm*post
 * Botamos observaciones post apagón:
 *drop if filter == 0
 
+* Para desestacionalizar más abajo
+gen weekday = 0
+replace weekday = mod(day+4,7) if month == 3
+replace weekday = mod(day+4,7) if month == 2
+replace weekday = 7 if weekday == 0
+bys state: gen num_fecha = _n
+sort state date
+order state date suicide anxiety depression
+
 
 ********************************************************************************
 
@@ -184,13 +194,6 @@ graph combine "plots/socsui19.gph" "plots/socanx19.gph" "plots/socdep19.gph" "pl
 
 set scheme s1color
 * Desestacionalizamos por día de la semana y por hora. 
-gen weekday = 0
-replace weekday = mod(day+4,7) if month == 3
-replace weekday = mod(day+4,7) if month == 2
-replace weekday = 7 if weekday == 0
-bys state: gen num_fecha = _n
-sort state date
-order state date suicide anxiety depression
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
@@ -309,7 +312,7 @@ reghdfe depression treatpost , abs(dia_estado date ef_hour) vce(cl state)
 reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 
-**********************************************
+/**********************************************
 ********************************************** Zero Inflated Poisson!
 **********************************************
 
@@ -328,6 +331,7 @@ est table, keep(treatpost) b se p
 qui zip depression treatpost i.int_state i.int_date i.ef_hour, inflate(_cons) vce(cl state)
 est table, keep(treatpost) b se p
 
+*/
 
 /*
 ***********************************************************
@@ -387,4 +391,66 @@ reghdfe ex_dep treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 * Corremos el DiD para Aggregate:
 reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
+
+
+
+********************************************************************************
+
+****************************** Event Studies ***********************************
+
+********************************************************************************
+
+
+
+cap drop ln*
+
+gen cont = _n - 12 if _n < 24
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 1/25 {
+	gen l`i' = 0
+	replace l`i' = socialm if num_fecha == `i' -12 + 349
+}
+
+* Corremos el Event Studies para Suicide:
+reghdfe suicide l* , abs(date dia_estado ef_hour) vce(cl state)
+gen estud_sui = 0
+gen dnic_sui = 0
+gen upic_sui = 0
+forvalues i = 1/24 {
+	replace estud_sui = _b[l`i'] if _n == `i'
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+}
+
+twoway ///
+(rarea upic_sui dnic_sui cont,  ///
+fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
+(line estud_sui cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Forward Months", size(medsmall)) ///
+note("Notes: 90 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+* Corremos el Event Studies para Anxiety:
+reghdfe anxiety l* , abs(date dia_estado ef_hour) vce(cl state)
+
+* Corremos el Event Studies para Depression:
+reghdfe depression l* , abs(date dia_estado ef_hour) vce(cl state)
+
+* Corremos el Event Studies para Depression:
+reghdfe index l* , abs(date dia_estado ef_hour) vce(cl state)
+
+
+/*
+encode state, gen(id)
+xtset id num_fecha
+qui xtreg suicide treatpost i.ef_hour i.num_fecha i.id, fe vce(cl id) 
+est table, keep(treatpost) b se p
+
+xtreg suicide 
+
 
