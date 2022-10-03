@@ -170,7 +170,7 @@ gen cont = _n / 24
 gen during = .
 replace during = 3 if dia == 4 & mes == 10 & hora > 11 & hora < 20
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save outage, replace
+graph save "plots/outage.gph", replace
 restore
 
 * Semana Pre Outage
@@ -180,7 +180,7 @@ keep if _n < 6625 & _n > 6456
 gen cont = _n / 24
 gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save preout, replace
+graph save "plots/preout.gph", replace
 restore
 
 * Semana Post Outage
@@ -190,10 +190,10 @@ keep if _n > 6792 & _n < 6961
 gen cont = _n / 24
 gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save postout, replace
+graph save "plots/postout.gph", replace
 restore
 
-grc1leg2 preout.gph outage.gph postout.gph
+grc1leg2 "plots/preout.gph" "plots/outage.gph" "plots/postout.gph"
 
 
 * 2. LINEAR RELATIONSHIP
@@ -245,7 +245,7 @@ gen up = .
 gen down = .
 
 * Plot
-replace up = 1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+replace up = 2 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 replace down = -1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
 */ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
@@ -259,12 +259,19 @@ restore
 preserve
 sum treat, d
 gen status = (treat >= 0.789) // High penetration above median.
-collapse (mean) outcome, by(fecha dia mes hora status)
+sum outcome if status == 0
+gen av_out0 = r(mean)
+sum outcome if status == 1
+gen av_out1 = r(mean)
+collapse (mean) outcome av_out0 av_out1, by(fecha dia mes hora status)
 sort status fecha
 * Only compare during outage observations:
 keep if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
-collapse (mean) outcome, by(status)
-statplot outcome , over(status) vertical legend(off)
+collapse (mean) outcome av_out0 av_out1, by(status)
+gen rel_out = 0
+replace rel_out = outcome / av_out0 if status == 0
+replace rel_out = outcome / av_out1 if status == 1
+statplot rel_out , over(status) vertical legend(off)
 restore
 
 

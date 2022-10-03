@@ -170,7 +170,7 @@ gen cont = _n / 24
 gen during = 0
 replace during = 3 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia == 14 & hora < 13)
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save outage2, replace
+graph save "plots/outage2.gph", replace
 restore
 
 * Semana Pre Outage
@@ -180,7 +180,7 @@ keep if _n < 1657 & _n > 1488
 gen cont = _n / 24
 gen during = 0
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save preout2, replace
+graph save "plots/preout2.gph", replace
 restore
 
 * Semana Post Outage
@@ -190,10 +190,10 @@ keep if _n > 1824 & _n < 1994
 gen cont = _n / 24
 gen during = 0
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save postout2, replace
+graph save "plots/postout2.gph", replace
 restore
 
-grc1leg2 preout2.gph outage2.gph postout2.gph
+grc1leg2 "plots/preout2.gph" "plots/outage2.gph" "plots/postout2.gph"
 
 
 * 2. LINEAR RELATIONSHIP
@@ -252,7 +252,7 @@ replace down = -1 if (mes == 3 & dia == 13 & hora > 12)
 twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
 */ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
 */ (line plot_out hora if period == 2, lcolor(red*.5)) 
-graph save "plots/dcar21.gph", replace
+graph save "plots/dcar19.gph", replace
 
 restore
 
@@ -268,6 +268,20 @@ sort status fecha
 keep if (dia == 13 & mes == 3 & hora > 10)
 collapse (mean) outcome, by(status)
 statplot outcome , over(status) vertical legend(off)
+restore
+
+preserve
+sum treat, d
+gen status = (treat >= 0.732) // High penetration above median.
+sum outcome
+gen av_out = r(mean)
+collapse (mean) outcome av_out, by(fecha dia mes hora status)
+sort status fecha
+* Only compare during outage observations:
+keep if (dia == 13 & mes == 3 & hora > 10)
+collapse (mean) outcome av_out, by(status)
+gen rel_out = outcome / av_out
+statplot rel_out , over(status) vertical legend(off)
 restore
 
 
