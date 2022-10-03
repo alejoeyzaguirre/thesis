@@ -511,7 +511,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 
-******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
+******************** Efecto Fijo Moment, Dia x Estado y Effective Hour
 
 
 cap drop cont Zero l* estud* up* dn*
