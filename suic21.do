@@ -431,9 +431,9 @@ gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
 forvalues i = 0/24 {
-	replace estud_sui = _b[l`i'] if _n == `i'
-	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_sui = _b[l`i'] if _n == `i'+1
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -453,9 +453,9 @@ gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
 forvalues i = 0/24 {
-	replace estud_anx = _b[l`i'] if _n == `i'
-	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_anx = _b[l`i'] if _n == `i'+1
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -474,9 +474,9 @@ gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
 forvalues i = 0/24 {
-	replace estud_dep = _b[l`i'] if _n == `i'
-	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_dep = _b[l`i'] if _n == `i'+1
+	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -495,9 +495,9 @@ gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
 forvalues i = 0/24 {
-	replace estud_ind = _b[l`i'] if _n == `i'
-	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_ind = _b[l`i'] if _n == `i'+1
+	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -530,9 +530,9 @@ gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
 forvalues i = 0/24 {
-	replace estud_sui = _b[l`i'] if _n == `i'
-	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_sui = _b[l`i'] if _n == `i'+1
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -552,9 +552,9 @@ gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
 forvalues i = 0/24 {
-	replace estud_anx = _b[l`i'] if _n == `i'
-	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_anx = _b[l`i'] if _n == `i'+1
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -573,9 +573,9 @@ gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
 forvalues i = 0/24 {
-	replace estud_dep = _b[l`i'] if _n == `i'
-	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_dep = _b[l`i'] if _n == `i'+1
+	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -594,15 +594,24 @@ gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
 forvalues i = 0/24 {
-	replace estud_ind = _b[l`i'] if _n == `i'
-	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+	replace estud_ind = _b[l`i'] if _n == `i'+1
+	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
 (rarea upic_ind dnic_ind cont,  ///
 fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line estud_ind cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+* Classic Plot
+twoway ///
+(rcap upic_ind dnic_ind cont)  ///
+(scatter estud_ind cont) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///

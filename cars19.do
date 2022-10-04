@@ -403,3 +403,12 @@ fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
 ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
+
+* Classic Plot
+twoway ///
+(rcap upic dnic cont)  ///
+(scatter estud cont) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))

@@ -582,7 +582,7 @@ reghdfe index l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_ind = _b[l`i'] if _n == `i'+1
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -592,6 +592,15 @@ twoway ///
 (rarea upic_ind dnic_ind cont,  ///
 fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line estud_ind cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+* Classic Plot
+twoway ///
+(rcap upic_ind dnic_ind cont)  ///
+(scatter estud_ind cont) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
