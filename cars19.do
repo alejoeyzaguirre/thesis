@@ -337,15 +337,16 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
 
 ********************************************************************************
 
+* NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
 ******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 24 if _n < 49
+gen cont = _n - 25 if _n < 50
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 1/49 {
+forvalues i = 0/48 {
 	gen l`i' = 0
 	replace l`i' = treat if num_fecha == `i' -24 + 1718
 }
@@ -355,10 +356,10 @@ reghdfe outcome l* , abs(cohort diahora) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 1/49 {
-	replace estud = _b[l`i'] if _n == `i'
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+forvalues i = 0/48 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
@@ -374,11 +375,11 @@ graphregion(color(white)) plotregion(color(white))
 ******************** Efecto Fijo Dia x Cohorte y Moment (Dia x Hora)
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 24 if _n < 49
+gen cont = _n - 25 if _n < 50
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 1/49 {
+forvalues i = 0/48 {
 	gen l`i' = 0
 	replace l`i' = treat if num_fecha == `i' -24 + 1718
 }
@@ -388,10 +389,10 @@ reghdfe outcome l* , abs(horagrupo diahora) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 1/49 {
-	replace estud = _b[l`i'] if _n == `i'
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
+forvalues i = 0/48 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
 twoway ///
