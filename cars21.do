@@ -405,20 +405,20 @@ forvalues i = 0/48 {
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
+
+summ upic
+local top_range = r(max)
+summ dnic
+local bottom_range = r(min)
+
 twoway ///
 (rarea upic dnic cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic dnic cont, lcolor(green)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
-* Classic Plot
-twoway ///
-(rcap upic dnic cont)  ///
-(scatter estud cont) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
