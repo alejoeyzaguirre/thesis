@@ -416,11 +416,11 @@ reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cluster state)
 ******************** Efecto Fijo Moment, Estado y Effective Hour 
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 12 if _n < 24
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 1/25 {
+forvalues i = 0/24 {
 	gen l`i' = 0
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
@@ -430,7 +430,7 @@ reghdfe suicide l* , abs(date state ef_hour) vce(cl state)
 gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_sui = _b[l`i'] if _n == `i'
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -452,7 +452,7 @@ reghdfe anxiety l* , abs(date state ef_hour) vce(cl state)
 gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_anx = _b[l`i'] if _n == `i'
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -473,7 +473,7 @@ reghdfe depression l* , abs(date state ef_hour) vce(cl state)
 gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_dep = _b[l`i'] if _n == `i'
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -494,7 +494,7 @@ reghdfe index l* , abs(date state ef_hour) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_ind = _b[l`i'] if _n == `i'
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -515,11 +515,11 @@ graphregion(color(white)) plotregion(color(white))
 
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 12 if _n < 24
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 1/25 {
+forvalues i = 0/24 {
 	gen l`i' = 0
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
@@ -529,7 +529,7 @@ reghdfe suicide l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_sui = _b[l`i'] if _n == `i'
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -551,7 +551,7 @@ reghdfe anxiety l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_anx = _b[l`i'] if _n == `i'
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -572,7 +572,7 @@ reghdfe depression l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_dep = _b[l`i'] if _n == `i'
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
@@ -593,7 +593,7 @@ reghdfe index l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
-forvalues i = 1/24 {
+forvalues i = 0/24 {
 	replace estud_ind = _b[l`i'] if _n == `i'
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'
