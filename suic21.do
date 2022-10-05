@@ -599,6 +599,16 @@ forvalues i = 0/24 {
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
+summ estud_ind if _n == 12
+local menosuno = r(mean)
+
+replace estud_ind = estud_ind - `menosuno'
+replace dnic_ind = dnic_ind - `menosuno'
+replace upic_ind = upic_ind - `menosuno'
+replace estud_ind = 0 if _n == 12
+replace dnic_ind = 0 if _n == 12
+replace upic_ind= 0 if _n == 12
+
 summ upic_ind
 local top_range = r(max)
 summ dnic_ind

@@ -513,6 +513,8 @@ forvalues i = 0/24 {
 	replace l`i' = socialm if num_fecha == `i' -12 + 349
 }
 
+
+
 * Corremos el Event Studies para Suicide:
 reghdfe suicide l* , abs(date dia_estado ef_hour) vce(cl state)
 gen estud_sui = 0
@@ -523,6 +525,7 @@ forvalues i = 0/24 {
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
+
 
 twoway ///
 (rarea upic_sui dnic_sui cont,  ///
@@ -587,6 +590,17 @@ forvalues i = 0/24 {
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
+
+summ estud_ind if _n == 12
+local menosuno = r(mean)
+
+replace estud_ind = estud_ind - `menosuno'
+replace dnic_ind = dnic_ind - `menosuno'
+replace upic_ind = upic_ind - `menosuno'
+replace estud_ind = 0 if _n == 12
+replace dnic_ind = 0 if _n == 12
+replace upic_ind= 0 if _n == 12
+
 
 summ upic_ind
 local top_range = r(max)
