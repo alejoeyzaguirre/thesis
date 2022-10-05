@@ -378,17 +378,25 @@ forvalues i = 0/24 {
 	replace l`i' = treat if num_fecha == `i' - 12 + 6637
 }
 
+drop l11
+
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe outcome l* , abs(horagrupo diahora diagrupo) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 0/24 {
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/24 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
+/*
 summ estud if _n == 12
 local menosuno = r(mean)
 
@@ -398,7 +406,7 @@ replace upic = upic - `menosuno'
 replace estud = 0 if _n == 12
 replace dnic = 0 if _n == 12
 replace upic= 0 if _n == 12
-
+*/
 
 summ upic
 local top_range = r(max)
