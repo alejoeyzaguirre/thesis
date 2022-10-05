@@ -148,6 +148,9 @@ gen diahora = fecha + hora1
 tostring cohort, gen(st_cohort)
 gen horagrupo = st_cohort + hora1
 
+* Efecto Fijo Grupo x Día
+gen diagrupo = fecha + st_cohort
+
 * Reemplazamos con cero en los outcomes vacíos:
 replace outcome = 0 if outcome == .
 
@@ -282,8 +285,6 @@ restore
 */
 
 
-
-
 ********************************************************************************
 
 ************************* Diferencias-en-Diferencias ***************************
@@ -291,53 +292,35 @@ restore
 ********************************************************************************
 
 
-* Corremos el DiD para Accidentes:
-
-* Botamos observaciones post apagón:
-*drop if filter == 0
-
-
-
 * MARGEN INTENSIVO:
+* Botamos observaciones post apagón:
+preserve
+drop if filter == 0
 
-/*
-* (1) Con Efecto Fijo Grupo y Hora:
-reghdfe outcome treatpost , abs(cohort hora) vce(cluster cohort)
-*/
 
-* (2) Con Efecto Fijo Grupo, Hora y Día:
-reghdfe outcome treatpost , abs(cohort hora fecha) vce(cluster cohort)
-
-* (3) Con Efecto Fijo Grupo y Hora-Día:
+* (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe outcome treatpost , abs(cohort diahora) vce(cluster cohort)
 
-* (4) Con Efecto Fijo Día y HoraxGrupo:
-reghdfe outcome treatpost , abs(fecha horagrupo) vce(cluster cohort)
-
-* (5) Con Efecto Fijo Grupo, Hora-Día y HoraxGrupo:
+* (2) Con Efecto Fijo Grupo, Hora-Día y HoraxGrupo:
 reghdfe outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
+
+* (3) Con Efecto Fijo Grupo, Hora-Día, HoraxGrupo y DiaxGrupo:
+reghdfe outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohort)
 
 * MARGEN EXTENSIVO:
 
 gen ex_outcome = (outcome > 0)
 
-/*
-* (1) Con Efecto Fijo Grupo y Hora:
-reghdfe ex_outcome treatpost , abs(cohort hora) vce(cluster cohort)
-*/
-
-* (2) Con Efecto Fijo Grupo, Hora y Día:
-reghdfe ex_outcome treatpost , abs(cohort hora fecha) vce(cluster cohort)
-
-* (3) Con Efecto Fijo Grupo y Hora-Día:
+* (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe ex_outcome treatpost , abs(cohort diahora) vce(cluster cohort)
 
-* (4) Con Efecto Fijo Día y HoraxGrupo:
-reghdfe ex_outcome treatpost , abs(fecha horagrupo) vce(cluster cohort)
-
-* (5) Con Efecto Fijo Hora-Día y HoraxGrupo:
+* (2) Con Efecto Fijo Hora-Día y HoraxGrupo:
 reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
 
+* (3) Con Efecto Fijo Grupo, Hora-Día, HoraxGrupo y DiaxGrupo:
+reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohort)
+
+restore
 
 
 
@@ -352,25 +335,26 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
 ******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 25 if _n < 50
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/48 {
+forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' -24 + 6637
+	replace l`i' = treat if num_fecha == `i' - 12 + 6637
 }
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(cohort diahora) vce(cl cohort)
+reghdfe outcome l* , abs(cohort diahora diagrupo) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 0/48 {
+forvalues i = 0/24 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
+
 
 twoway ///
 (rarea upic dnic cont,  ///
@@ -382,28 +366,38 @@ note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
 
-******************** Efecto Fijo Dia x Cohorte y Moment (Dia x Hora)
+******************** Efecto Fijo HoraxCohorte, Moment (Dia x Hora) y DiaxGrupo
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 25 if _n < 50
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/48 {
+forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' -24 + 6637
+	replace l`i' = treat if num_fecha == `i' - 12 + 6637
 }
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(horagrupo diahora) vce(cl cohort)
+reghdfe outcome l* , abs(horagrupo diahora diagrupo) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 0/48 {
+forvalues i = 0/24 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
+
+summ estud if _n == 12
+local menosuno = r(mean)
+
+replace estud = estud - `menosuno'
+replace dnic = dnic - `menosuno'
+replace upic = upic - `menosuno'
+replace estud = 0 if _n == 12
+replace dnic = 0 if _n == 12
+replace upic= 0 if _n == 12
 
 
 summ upic
@@ -415,10 +409,11 @@ twoway ///
 (rarea upic dnic cont,  ///
 fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic dnic cont, lcolor(green)) ///
+(line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
-(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
+
 
