@@ -319,6 +319,7 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohor
 
 restore
 
+
 ********************************************************************************
 
 ****************************** Event Studies ***********************************
