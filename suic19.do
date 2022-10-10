@@ -130,7 +130,7 @@ sort state date
 order state date suicide anxiety depression
 
 
-/********************************************************************************
+********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -255,15 +255,19 @@ grc1leg2 "plots/dsui19.gph" "plots/danx19.gph" "plots/ddep19.gph"
 
 * 4. HISTOGRAMS PER HIGH AND LOW SOCIAL MEDIA PENETRATION
 
-preserve
+*preserve
+gen during = 0
+replace during = 1 if post == 1 & filter == 1
+replace during = 2 if filter == 0
 sum socialm, d
 gen status = (socialm > 73.8)
-collapse (mean) suicide anxiety depression index socialm, by(date day hour status)
+collapse (mean) suicide anxiety depression index socialm, by(date day hour status during)
 sort status date
 * Only compare during outage observations:
-keep if (day == 13 & hour > 10)
-collapse (mean) suicide anxiety depression, by(status)
-statplot suicide anxiety depression , over(status) vertical legend(off)
+collapse (mean) suicide anxiety depression, by(status during)
+drop if during == 2
+gen categ = _n
+statplot suicide anxiety depression , over(categ) vertical legend(off)
 restore
 
 */
