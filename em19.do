@@ -12,7 +12,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 
 ********************************************************************************
 
-**************************** Usando Datos 2021 *********************************
+**************************** Usando Datos 2019 *********************************
 
 ********************************************************************************
 
@@ -36,7 +36,7 @@ collapse (count) r21d r21b
 */
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
-use "$output/emergencies", clear
+use "$output/raw19", clear
 
 * Me quedo solo con causas relacionadas a salud mental:
 keep if idcausa > 34 & idcausa <43
