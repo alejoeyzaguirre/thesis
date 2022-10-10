@@ -36,12 +36,13 @@ collapse (count) r21d r21b
 */
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
-use "$output/emergencies", clear
+use "$output/emergencies19", clear
 
-* Me quedo solo con causas relacionadas a salud mental:
+* Me quedo solo con causas relacionadas a salud mental: : ()
+tab glosacausa
 keep if idcausa > 34 & idcausa <43
 
-* 
+/* 
 
 * Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
 * de cada día:
