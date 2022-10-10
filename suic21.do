@@ -127,14 +127,16 @@ order state date suicide anxiety depression
 
 
 
-/********************************************************************************
+********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
 ********************************************************************************
 
-
 set scheme s1color
+
+
+* 1. RAW TRENDS PER WEEK
 
 * Semana Outage
 preserve
@@ -169,7 +171,9 @@ restore
 
 grc1leg2 "plots/outage.gph" "plots/preout.gph" "plots/postout.gph"
 
-* Relación Lineal
+
+* 2. LINEAR RELATIONSHIP WITH TREATMENT
+
 preserve
 * Ahora Social Media
 collapse (mean) suicide anxiety depression index socialm, by(state)
@@ -188,19 +192,9 @@ graph combine "plots/socsui.gph" "plots/socanx.gph" "plots/socdep.gph" "plots/so
 
 
 
-
-******** Desestacionalizando Comparission 
-
+* 3. SEASONALLY ADJUSTED TRENDS PER DAY
 
 set scheme s1color
-* Desestacionalizamos por día de la semana y por hora. 
-gen weekday = 0
-replace weekday = mod(day+2,7) if month == 9
-replace weekday = mod(day+4,7) if month == 10
-replace weekday = 7 if weekday == 0
-bys state: gen num_fecha = _n
-sort state date
-order state date suicide anxiety depression
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
@@ -263,16 +257,22 @@ twoway (line plot_sui hour if period == 0, lcolor(orange*.1)) (lowess plot_sui h
 */
 
 
-*********** Histograms
+
+* 4. HISTOGRAMS PER HIGH AND LOW SOCIAL MEDIA PENETRATION
+
 preserve
+gen during = 0
+replace during = 1 if post == 1 & filter == 1
+replace during = 2 if filter == 0
 sum socialm, d
 gen status = (socialm > 74.7)
-collapse (mean) suicide anxiety depression index socialm, by(date day hour status)
+collapse (mean) suicide anxiety depression index socialm, by(date day hour status during)
 sort status date
 * Only compare during outage observations:
-keep if (day == 4 & hour > 8 & hour < 16)
-collapse (mean) suicide anxiety depression, by(status)
-statplot suicide anxiety depression , over(status) vertical legend(off)
+collapse (mean) suicide anxiety depression, by(status during)
+drop if during == 2
+gen categ = _n
+statplot suicide anxiety depression , over(categ) vertical legend(off)
 restore
 
 */
