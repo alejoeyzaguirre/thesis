@@ -130,7 +130,7 @@ sort state date
 order state date suicide anxiety depression
 
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -255,7 +255,7 @@ grc1leg2 "plots/dsui19.gph" "plots/danx19.gph" "plots/ddep19.gph"
 
 * 4. HISTOGRAMS PER HIGH AND LOW SOCIAL MEDIA PENETRATION
 
-*preserve
+preserve
 gen during = 0
 replace during = 1 if post == 1 & filter == 1
 replace during = 2 if filter == 0
