@@ -420,6 +420,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))

@@ -328,7 +328,7 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
-******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
+/******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
 
 cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 13 if _n < 26
@@ -361,16 +361,16 @@ ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
-
+*/
 
 ******************** Efecto Fijo HoraxCohorte, Moment (Dia x Hora) y DiaxGrupo
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 26
+gen cont = _n - 13 if _n < 38
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/24 {
+forvalues i = 0/36 {
 	gen l`i' = 0
 	replace l`i' = treat if num_fecha == `i' - 12 + 6637
 }
@@ -387,7 +387,7 @@ forvalues i = 0/10 {
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/24 {
+forvalues i = 12/36 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -417,6 +417,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
