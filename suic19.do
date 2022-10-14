@@ -37,7 +37,9 @@ merge m:m state date using "$output/anx19", nogen
 merge m:m state date using "$output/dep19", nogen
 
 duplicates report
-duplicates drop
+gen botar = date + state
+duplicates drop botar, force
+drop botar
 
 sort state date
 order state date suicide anxiety depression
@@ -129,6 +131,7 @@ bys state: gen num_fecha = _n
 sort state date
 order state date suicide anxiety depression
 
+drop if num_fecha > 672
 
 /********************************************************************************
 
@@ -299,12 +302,13 @@ reghdfe depression treatpost , abs(state date ef_hour) vce(cl state)
 reghdfe index treatpost , abs(state date ef_hour) vce(cl state)
 
 
-
+/*
 **********************************************
 ********************************************** Efecto Fijo Dia-Estado y Momento!
 **********************************************
 
 gen dia_estado = date1 + state
+encode dia_estado, gen(num_diaestado)
 
 * Corremos el DiD para Suicide:
 reghdfe suicide treatpost , abs(dia_estado date ef_hour) vce(cl state)
@@ -317,7 +321,7 @@ reghdfe depression treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 * Corremos el DiD para Index (Levy):
 reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cl state)
-
+*/
 
 /**********************************************
 ********************************************** Zero Inflated Poisson!
@@ -385,6 +389,8 @@ reghdfe ex_dep treatpost , abs(date state ef_hour) vce(cl state)
 * Corremos el DiD para Aggregate:
 reghdfe ex_aggr treatpost , abs(date state ef_hour) vce(cl state)
 
+
+/*
 * Efecto fijo Shocks Macro c/hora + Hora Efectiva + Shocks Idiosincráticos State
 
 * Corremos el DiD para Suicide:
@@ -398,7 +404,7 @@ reghdfe ex_dep treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 * Corremos el DiD para Aggregate:
 reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
-
+*/
 
 
 ********************************************************************************
@@ -509,7 +515,7 @@ graphregion(color(white)) plotregion(color(white))
 
 ******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
 
-
+drop ln*
 cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 13 if _n < 38
 gen Zero = 0
@@ -517,7 +523,7 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/36 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 349
+	replace l`i' = socialm if num_fecha == `i' -12 + 348
 }
 
 /*
@@ -570,8 +576,17 @@ graphregion(color(white)) plotregion(color(white))
 * Corremos el Event Studies para Depression:
 
 drop l11
+encode state, gen(num_state)
+encode date, gen(moment)
 
-reghdfe depression l* , abs(date dia_estado ef_hour) vce(cl state)
+gen nada = 0
+replace nada = 1 if _n == 321
+
+log using "output", replace
+*areg depression l* i.num_state i.ef_hour, abs(moment) vce(cl state)
+reghdfe depression l*, abs(moment num_state ef_hour) vce(cl state)
+log close
+translate "output.smcl" "output.pdf",replace
 gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
@@ -607,7 +622,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Index (Levy 2022):
-reghdfe index l* , abs(date dia_estado ef_hour) vce(cl state)
+reghdfe index l*, abs(moment num_state ef_hour) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
@@ -676,7 +691,7 @@ forvalues i = 0/36 {
 drop l11
 
 * Corremos el Event Studies para Weather:
-reghdfe weather l* , abs(date dia_estado ef_hour) vce(cl state)
+reghdfe weather l* , abs(moment num_state ef_hour) vce(cl state)
 gen estud_wea = 0
 gen dnic_wea = 0
 gen upic_wea = 0
