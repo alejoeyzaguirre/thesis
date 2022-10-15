@@ -96,7 +96,7 @@ sort cohort date hora
 order date hora cohort
 
 
-* Generamos Filtro post todo:
+* Generamos Filtro post apagón 24 horas:
 cap drop filter
 gen filter = 1
 replace filter = 0 if (mes == 3 & dia == 14 & hora > 12) | (mes == 3 & dia > 14) /*
@@ -174,6 +174,10 @@ bys cohort: gen num_fecha = _n
 sort cohort fecha
 order cohort fecha outcome
 
+
+encode horagrupo, gen(num_horagrupo)
+encode diahora, gen(num_diahora)
+encode diagrupo, gen(num_diagrupo)
 
 /********************************************************************************
 
@@ -363,7 +367,7 @@ graphregion(color(white)) plotregion(color(white))
 
 */
 
-******************** Efecto Fijo HoraxCohorte, Moment (Dia x Hora) y DiaxGrupo
+******************** Efecto Fijo Cohort y Moment
 
 cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 13 if _n < 38
@@ -372,13 +376,17 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/36 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 6637
+	replace l`i' = treat if num_fecha == `i' - 12 + 1718
 }
 
 drop l11
 
+replace l0 = treat if num_fecha < 1706
+replace l36 = treat if num_fecha > 1742
+
+
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(horagrupo diahora diagrupo) vce(cl cohort)
+reghdfe outcome l* , abs(cohort diahora) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -417,7 +425,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = 24.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
