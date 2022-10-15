@@ -332,41 +332,9 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
-******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
-
-cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 26
-gen Zero = 0
-
-* Genero leads y lags:
-forvalues i = 0/24 {
-	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 6637
-}
-
-* Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(cohort diahora diagrupo) vce(cl cohort)
-gen estud = 0
-gen dnic = 0
-gen upic = 0
-forvalues i = 0/24 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
 
 
-twoway ///
-(rarea upic dnic cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-******************** Efecto Fijo HoraxCohorte, Moment (Dia x Hora) y DiaxGrupo
+******************** Efecto Fijo Moment y Cohort
 
 cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 13 if _n < 26
@@ -379,9 +347,11 @@ forvalues i = 0/24 {
 }
 
 drop l11
+replace l0 = treat if num_fecha < 6625
+replace l24 = treat if num_fecha > 6649
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(horagrupo diahora diagrupo) vce(cl cohort)
+reghdfe outcome l* , abs(diahora cohort) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -419,9 +389,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic dnic cont, lcolor(green)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
-(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
- legend(off) ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 

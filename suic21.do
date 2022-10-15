@@ -520,17 +520,17 @@ graphregion(color(white)) plotregion(color(white))
 
 drop ln*
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 38
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/36 {
+forvalues i = 0/24 {
 	gen l`i' = 0
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
 
 replace l0 = socialm if num_fecha < 334
-replace l36 = socialm if num_fecha > 370
+replace l24 = socialm if num_fecha > 358
 
 
 drop l11
@@ -542,7 +542,7 @@ replace nada = 1 if _n == 321
 
 * Corremos el Event Studies para Suicide:
 
-reghdfe suicide l*, abs(moment num_state ef_hour) vce(cl state)
+reghdfe suicide l*, abs(moment num_state) vce(cl state)
 gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
@@ -551,7 +551,7 @@ forvalues i = 0/10 {
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/24 {
 	replace estud_sui = _b[l`i'] if _n == `i'+1
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -568,7 +568,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_sui dnic_sui cont, lcolor(green)) ///
 (sc estud_sui cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Suicide", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
@@ -577,7 +577,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Anxiety:
-reghdfe anxiety l*, abs(moment num_state ef_hour) vce(cl state)
+reghdfe anxiety l*, abs(moment num_state) vce(cl state)
 gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
@@ -586,7 +586,7 @@ forvalues i = 0/10 {
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/24 {
 	replace estud_anx = _b[l`i'] if _n == `i'+1
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -603,7 +603,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_anx dnic_anx cont, lcolor(green)) ///
 (sc estud_anx cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Anxiety", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
@@ -615,7 +615,7 @@ graphregion(color(white)) plotregion(color(white))
 
 *log using "output", replace
 *areg depression l* i.num_state i.ef_hour, abs(moment) vce(cl state)
-reghdfe depression l*, abs(moment num_state ef_hour) vce(cl state)
+reghdfe depression l*, abs(moment num_state) vce(cl state)
 *log close
 *translate "output.smcl" "output.pdf",replace
 gen estud_dep = 0
@@ -626,7 +626,7 @@ forvalues i = 0/10 {
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/24 {
 	replace estud_dep = _b[l`i'] if _n == `i'+1
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -643,7 +643,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_dep dnic_dep cont, lcolor(green)) ///
 (sc estud_dep cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Depression", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
@@ -653,7 +653,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Index (Levy 2022):
-reghdfe index l*, abs(moment num_state ef_hour) vce(cl state)
+reghdfe index l*, abs(moment num_state) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
@@ -662,7 +662,7 @@ forvalues i = 0/10 {
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/24 {
 	replace estud_ind = _b[l`i'] if _n == `i'+1
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -680,7 +680,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_ind dnic_ind cont, lcolor(green)) ///
 (sc estud_ind cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
 ytitle("Index", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
@@ -697,28 +697,23 @@ graphregion(color(white)) plotregion(color(white))
 merge m:m state date using "$output/wea21", nogen
 
 * Con Event Studies: 
-
-drop ln*
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 38
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/36 {
+forvalues i = 0/24 {
 	gen l`i' = 0
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
 
 replace l0 = 1 if num_fecha < 334
-replace l36 = 1 if num_fecha > 370
-
+replace l24 = 1 if num_fecha > 358
 
 drop l11
-encode state, gen(num_state)
-encode date, gen(moment)
 
 * Corremos el Event Studies para Weather:
-reghdfe weather l* , abs(moment num_state ef_hour) vce(cl state)
+reghdfe weather l* , abs(moment num_state) vce(cl state)
 gen estud_wea = 0
 gen dnic_wea = 0
 gen upic_wea = 0
@@ -727,7 +722,7 @@ forvalues i = 0/10 {
 	replace dnic_wea =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_wea =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/24 {
 	replace estud_wea = _b[l`i'] if _n == `i'+1
 	replace dnic_wea =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_wea =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -757,9 +752,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_wea dnic_wea cont, lcolor(green)) ///
 (sc estud_wea cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Weather", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
