@@ -529,8 +529,8 @@ forvalues i = 0/36 {
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
 
-replace l0 = 1 if num_fecha < 334
-replace l36 = 1 if num_fecha > 370
+replace l0 = socialm if num_fecha < 334
+replace l36 = socialm if num_fecha > 370
 
 
 drop l11
@@ -698,6 +698,7 @@ merge m:m state date using "$output/wea21", nogen
 
 * Con Event Studies: 
 
+drop ln*
 cap drop cont Zero l* estud* up* dn*
 gen cont = _n - 13 if _n < 38
 gen Zero = 0
@@ -708,7 +709,13 @@ forvalues i = 0/36 {
 	replace l`i' = socialm if num_fecha == `i' -12 + 346
 }
 
+replace l0 = 1 if num_fecha < 334
+replace l36 = 1 if num_fecha > 370
+
+
 drop l11
+encode state, gen(num_state)
+encode date, gen(moment)
 
 * Corremos el Event Studies para Weather:
 reghdfe weather l* , abs(moment num_state ef_hour) vce(cl state)

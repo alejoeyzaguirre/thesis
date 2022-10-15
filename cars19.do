@@ -16,7 +16,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Car Accidents"
 
 ********************************************************************************
 
-*set maxvar 10000
+set maxvar 10000
 
 import delimited "$output/ts19.csv", delimiter(comma) varnames(1) clear
 split ts, p(" ")

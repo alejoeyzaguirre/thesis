@@ -526,8 +526,8 @@ forvalues i = 0/36 {
 	replace l`i' = socialm if num_fecha == `i' -12 + 348
 }
 
-replace l0 = 1 if num_fecha < 336
-replace l36 = 1 if num_fecha > 372
+replace l0 = socialm if num_fecha < 336
+replace l36 = socialm if num_fecha > 372
 
 
 drop l11
@@ -702,10 +702,16 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/36 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 349
+	replace l`i' = socialm if num_fecha == `i' -12 + 348
 }
 
+replace l0 = socialm if num_fecha < 336
+replace l36 = socialm if num_fecha > 372
+
+
 drop l11
+encode state, gen(num_state)
+encode date, gen(moment)
 
 * Corremos el Event Studies para Weather:
 reghdfe weather l* , abs(moment num_state ef_hour) vce(cl state)
