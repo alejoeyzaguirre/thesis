@@ -526,54 +526,9 @@ forvalues i = 0/36 {
 	replace l`i' = socialm if num_fecha == `i' -12 + 348
 }
 
-/*
+replace l0 = 1 if num_fecha < 336
+replace l36 = 1 if num_fecha > 372
 
-* Corremos el Event Studies para Suicide:
-reghdfe suicide l* , abs(date dia_estado ef_hour) vce(cl state)
-gen estud_sui = 0
-gen dnic_sui = 0
-gen upic_sui = 0
-forvalues i = 0/24 {
-	replace estud_sui = _b[l`i'] if _n == `i'+1
-	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-
-twoway ///
-(rarea upic_sui dnic_sui cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_sui cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-
-* Corremos el Event Studies para Anxiety:
-reghdfe anxiety l* , abs(date dia_estado ef_hour) vce(cl state)
-gen estud_anx = 0
-gen dnic_anx = 0
-gen upic_anx = 0
-forvalues i = 0/24 {
-	replace estud_anx = _b[l`i'] if _n == `i'+1
-	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-twoway ///
-(rarea upic_anx dnic_anx cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_anx cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-*/
-
-* Corremos el Event Studies para Depression:
 
 drop l11
 encode state, gen(num_state)
@@ -582,11 +537,84 @@ encode date, gen(moment)
 gen nada = 0
 replace nada = 1 if _n == 321
 
-log using "output", replace
+* Corremos el Event Studies para Suicide:
+
+reghdfe suicide l*, abs(moment num_state ef_hour) vce(cl state)
+gen estud_sui = 0
+gen dnic_sui = 0
+gen upic_sui = 0
+forvalues i = 0/10 {
+	replace estud_sui = _b[l`i'] if _n == `i'+1
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/36 {
+	replace estud_sui = _b[l`i'] if _n == `i'+1
+	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+summ upic_sui
+local top_range = r(max)
+summ dnic_sui
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic_sui dnic_sui cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic_sui dnic_sui cont, lcolor(green)) ///
+(sc estud_sui cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+* Corremos el Event Studies para Anxiety:
+reghdfe anxiety l*, abs(moment num_state ef_hour) vce(cl state)
+gen estud_anx = 0
+gen dnic_anx = 0
+gen upic_anx = 0
+forvalues i = 0/10 {
+	replace estud_anx = _b[l`i'] if _n == `i'+1
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/36 {
+	replace estud_anx = _b[l`i'] if _n == `i'+1
+	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+summ upic_anx
+local top_range = r(max)
+summ dnic_anx
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic_anx dnic_anx cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic_anx dnic_anx cont, lcolor(green)) ///
+(sc estud_anx cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+* Corremos el Event Studies para Depression:
+
+*log using "output", replace
 *areg depression l* i.num_state i.ef_hour, abs(moment) vce(cl state)
 reghdfe depression l*, abs(moment num_state ef_hour) vce(cl state)
-log close
-translate "output.smcl" "output.pdf",replace
+*log close
+*translate "output.smcl" "output.pdf",replace
 gen estud_dep = 0
 gen dnic_dep = 0
 gen upic_dep = 0
@@ -637,17 +665,6 @@ forvalues i = 12/36 {
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
-/*
-summ estud_ind if _n == 12
-local menosuno = r(mean)
-
-replace estud_ind = estud_ind - `menosuno'
-replace dnic_ind = dnic_ind - `menosuno'
-replace upic_ind = upic_ind - `menosuno'
-replace estud_ind = 0 if _n == 12
-replace dnic_ind = 0 if _n == 12
-replace upic_ind= 0 if _n == 12
-*/
 
 summ upic_ind
 local top_range = r(max)
