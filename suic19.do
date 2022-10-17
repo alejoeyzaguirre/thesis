@@ -305,7 +305,7 @@ reghdfe depression treatpost , abs(state date ef_hour) vce(cl state)
 reghdfe index treatpost , abs(state date ef_hour) vce(cl state)
 
 
-/*
+
 **********************************************
 ********************************************** Efecto Fijo Dia-Estado y Momento!
 **********************************************
@@ -324,7 +324,7 @@ reghdfe depression treatpost , abs(dia_estado date ef_hour) vce(cl state)
 
 * Corremos el DiD para Index (Levy):
 reghdfe index treatpost , abs(dia_estado date ef_hour) vce(cl state)
-*/
+
 
 /**********************************************
 ********************************************** Zero Inflated Poisson!
@@ -378,19 +378,19 @@ gen ex_anx = (anxiety>0)
 gen ex_dep = (depression>0)
 gen ex_aggr = ((suicide + anxiety + depression)>0)
 
-* Efecto fijo Shocks Macro c/hora + Hora Efectiva + Estado
+* Efecto fijo Shocks Macro c/hora + Estado
 
 * Corremos el DiD para Suicide:
-reghdfe ex_sui treatpost , abs(date state ef_hour) vce(cl state)
+reghdfe ex_sui treatpost , abs(date state) vce(cl state)
 
 * Corremos el DiD para Anxiety:
-reghdfe ex_anx treatpost , abs(date state ef_hour) vce(cl state)
+reghdfe ex_anx treatpost , abs(date state) vce(cl state)
 
 * Corremos el DiD para Depression:
-reghdfe ex_dep treatpost , abs(date state ef_hour) vce(cl state)
+reghdfe ex_dep treatpost , abs(date state) vce(cl state)
 
 * Corremos el DiD para Aggregate:
-reghdfe ex_aggr treatpost , abs(date state ef_hour) vce(cl state)
+reghdfe ex_aggr treatpost , abs(date state) vce(cl state)
 
 
 /*
