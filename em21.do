@@ -36,13 +36,13 @@ collapse (count) r21d r21b
 */
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
-use "$output/emergencies19", clear
+use "$output/emergencies", clear
 
 * Me quedo solo con causas relacionadas a salud mental: : ()
 tab glosacausa
 keep if idcausa > 34 & idcausa <43
 
-/* 
+
 
 * Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
 * de cada día:
@@ -64,16 +64,20 @@ replace diasemana = mod(dia+0,7) if mes == 11
 replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
 
-gen during = 0
+gen during = 99
+replace during = 0 if (dia > 12 & mes == 9) | (dia < 4 & mes == 10)
 replace during = 1 if dia == 4 & mes == 10
-replace during = 2 if dia > 4 & mes == 10 | mes > 10
+replace during = 2 if (dia > 4 & dia < 26 & mes == 10) 
+drop if during == 99
 
 collapse (mean) total, by(diasemana during)
 
-*drop if during == 2
+drop if during == 2
 replace during = -1 if during == 1
 sort diasemana during
 gen categ = _n
+
+replace total = total -1200
 
 set scheme s1color
 statplot total , over(categ) vertical legend(off)
