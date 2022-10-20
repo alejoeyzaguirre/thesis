@@ -30,6 +30,9 @@ save "$output/dep19",replace
 import delimited "$raw/US-Trends/wea19.csv", varnames(1) clear // Weather
 save "$output/wea19",replace
 
+import delimited "$raw/US-Trends/amz19.csv", varnames(1) clear // Amazon
+save "$output/amz19",replace
+
 
 import delimited "$raw/US-Trends/sui19.csv", clear
 merge m:1 state using "$raw/US-Internet/us_internet19", nogen
@@ -421,6 +424,8 @@ reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
 ******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
 
 merge m:m state date using "$output/wea19", nogen
+merge m:m state date using "$output/amz19", nogen
+
 
 drop ln*
 cap drop cont Zero l* estud* up* dn*
@@ -632,19 +637,6 @@ forvalues i = 12/36 {
 	replace upic_wea =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
 
-
-/*
-summ estud_wea if _n == 12
-local menosuno = r(mean)
-
-replace estud_wea = estud_wea - `menosuno'
-replace dnic_wea = dnic_wea - `menosuno'
-replace upic_wea = upic_wea - `menosuno'
-replace estud_wea = 0 if _n == 12
-replace dnic_wea = 0 if _n == 12
-replace upic_wea= 0 if _n == 12
-*/
-
 summ upic_wea
 local top_range = r(max)
 summ dnic_wea
@@ -661,4 +653,43 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 ytitle("Weather", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
+
+
+
+* Corremos el Event Studies para Amazon:
+
+
+reghdfe amazon l* , abs(moment num_state) vce(cl state)
+gen estud_amz = 0
+gen dnic_amz = 0
+gen upic_amz = 0
+forvalues i = 0/10 {
+	replace estud_amz = _b[l`i'] if _n == `i'+1
+	replace dnic_amz =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_amz =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/36 {
+	replace estud_amz = _b[l`i'] if _n == `i'+1
+	replace dnic_amz =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic_amz =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+
+summ upic_amz
+local top_range = r(max)
+summ dnic_amz
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic_amz dnic_amz cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic_amz dnic_amz cont, lcolor(green)) ///
+(sc estud_amz cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(line Zero cont, lcolor(black)), legend(off) ///
+ytitle("Amazon", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
 

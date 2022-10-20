@@ -370,19 +370,21 @@ graphregion(color(white)) plotregion(color(white))
 ******************** Efecto Fijo Cohort y Moment
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 38
+gen cont = _n - 13 if _n < 32
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/36 {
+forvalues i = 0/30 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 1718
+	replace l`i' = treat if num_fecha == 1718 - (24 - `i'*2)
+	replace l`i' = treat if num_fecha == 1718 - (24 - `i'*2) + 1
 }
+
 
 drop l11
 
-replace l0 = treat if num_fecha < 1706
-replace l36 = treat if num_fecha > 1742
+replace l0 = treat if num_fecha < 1694
+replace l30= treat if num_fecha > 1755
 
 
 * Corremos el Event Studies para Outcome "Car Accidents":
@@ -395,7 +397,7 @@ forvalues i = 0/10 {
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -425,7 +427,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Outcome 2019", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
