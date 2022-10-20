@@ -429,24 +429,20 @@ merge m:m state date using "$output/amz19", nogen
 
 drop ln*
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 38
+gen cont = _n - 13 if _n < 32
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/36 {
+forvalues i = 0/30 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 348
+	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2)
+	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2) + 1
 }
 
-replace l0 = socialm if num_fecha < 336
-replace l36 = socialm if num_fecha > 372
-
+replace l0 = socialm if num_fecha < 324
+replace l30 = socialm if num_fecha > 385
 
 drop l11
-
-
-gen nada = 0
-replace nada = 1 if _n == 321
 
 * Corremos el Event Studies para Suicide:
 
@@ -459,7 +455,7 @@ forvalues i = 0/10 {
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_sui = _b[l`i'] if _n == `i'+1
 	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -476,9 +472,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_sui dnic_sui cont, lcolor(green)) ///
 (sc estud_sui cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Suicide", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Suicide", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
@@ -494,7 +490,7 @@ forvalues i = 0/10 {
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_anx = _b[l`i'] if _n == `i'+1
 	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -511,9 +507,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_anx dnic_anx cont, lcolor(green)) ///
 (sc estud_anx cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Anxiety", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Anxiety", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
@@ -534,7 +530,7 @@ forvalues i = 0/10 {
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_dep = _b[l`i'] if _n == `i'+1
 	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -551,9 +547,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_dep dnic_dep cont, lcolor(green)) ///
 (sc estud_dep cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Depression", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Depression", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
@@ -570,7 +566,7 @@ forvalues i = 0/10 {
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_ind = _b[l`i'] if _n == `i'+1
 	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -588,9 +584,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_ind dnic_ind cont, lcolor(green)) ///
 (sc estud_ind cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Index", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Index", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
@@ -606,18 +602,18 @@ graphregion(color(white)) plotregion(color(white))
 * Con Event Studies: 
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 38
+gen cont = _n - 13 if _n < 32
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/36 {
+forvalues i = 0/30 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 348
+	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2)
+	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2) + 1
 }
 
-replace l0 = socialm if num_fecha < 336
-replace l36 = socialm if num_fecha > 372
-
+replace l0 = socialm if num_fecha < 324
+replace l30 = socialm if num_fecha > 385
 
 drop l11
 
@@ -631,7 +627,7 @@ forvalues i = 0/10 {
 	replace dnic_wea =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_wea =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_wea = _b[l`i'] if _n == `i'+1
 	replace dnic_wea =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_wea =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -648,9 +644,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_wea dnic_wea cont, lcolor(green)) ///
 (sc estud_wea cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Weather", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Weather", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
@@ -668,7 +664,7 @@ forvalues i = 0/10 {
 	replace dnic_amz =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_amz =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/36 {
+forvalues i = 12/30 {
 	replace estud_amz = _b[l`i'] if _n == `i'+1
 	replace dnic_amz =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic_amz =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
@@ -686,9 +682,9 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic_amz dnic_amz cont, lcolor(green)) ///
 (sc estud_amz cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 23.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Amazon", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ytitle("Amazon", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
