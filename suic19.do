@@ -136,6 +136,14 @@ order state date suicide anxiety depression
 
 drop if num_fecha > 672
 
+tostring weekday, gen(st_weekday)
+tostring ef_hour, gen(st_ef_hour)
+
+gen st_sw = state + " " + st_weekday
+gen st_se = state + " " + st_ef_hour
+
+encode st_sw, gen(stateweekday)
+encode st_se, gen(stateefhour)
 encode state, gen(num_state)
 encode date, gen(moment)
 
@@ -419,6 +427,15 @@ reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cl state)
 
 ********************************************************************************
 
+* Desestacinalizamos: (ef hour estado, dia semana estado y mes estado)
+qui reg suicide i.stateefhour i.stateweekday
+predict dsuicide, residuals
+qui reg anxiety i.stateefhour i.stateweekday
+predict danxiety, residuals
+qui reg depression i.stateefhour i.stateweekday
+predict ddepression, residuals
+qui reg index i.stateefhour i.stateweekday
+predict dindex, residuals
 
 
 ******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
@@ -446,7 +463,7 @@ drop l11
 
 * Corremos el Event Studies para Suicide:
 
-reghdfe suicide l*, abs(moment num_state) vce(cl state)
+reghdfe dsuicide l*, abs(moment num_state) vce(cl state)
 gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
@@ -481,7 +498,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Anxiety:
-reghdfe anxiety l* weather, abs(moment num_state) vce(cl state)
+reghdfe danxiety l* weather, abs(moment num_state) vce(cl state)
 gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
@@ -519,7 +536,7 @@ graphregion(color(white)) plotregion(color(white))
 
 *log using "output", replace
 *areg depression l* i.num_state i.ef_hour, abs(moment) vce(cl state)
-reghdfe depression l*, abs(moment num_state) vce(cl state)
+reghdfe ddepression l*, abs(moment num_state) vce(cl state)
 *log close
 *translate "output.smcl" "output.pdf",replace
 gen estud_dep = 0
@@ -557,7 +574,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Index (Levy 2022):
-reghdfe index l*, abs(moment num_state) vce(cl state)
+reghdfe dindex l*, abs(moment num_state) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
@@ -596,7 +613,10 @@ graphregion(color(white)) plotregion(color(white))
 ****************************** Robustness Checks *******************************
 
 ********************************************************************************
-
+qui reg weather i.stateefhour i.stateweekday
+predict dweather, residuals
+qui reg amazon i.stateefhour i.stateweekday
+predict damazon, residuals
 
 
 * Con Event Studies: 
@@ -618,7 +638,7 @@ replace l30 = socialm if num_fecha > 385
 drop l11
 
 * Corremos el Event Studies para Weather:
-reghdfe weather l* , abs(moment num_state) vce(cl state)
+reghdfe dweather l* , abs(moment num_state) vce(cl state)
 gen estud_wea = 0
 gen dnic_wea = 0
 gen upic_wea = 0
@@ -653,7 +673,6 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Amazon:
-
 
 reghdfe amazon l* , abs(moment num_state) vce(cl state)
 gen estud_amz = 0
