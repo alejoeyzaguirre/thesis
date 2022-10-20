@@ -170,6 +170,18 @@ replace diasemana = mod(dia+0,7) if mes == 11
 replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
 
+tostring diasemana, gen(st_diasemana)
+gen st_weekdaygrupo = st_diasemana + " " + st_cohort
+
+tostring mes, gen(st_mes)
+gen st_mesgrupo = st_mes + " " + st_cohort
+
+encode st_mesgrupo, gen(mesgrupo)
+encode st_weekdaygrupo, gen(weekdaygrupo)
+encode horagrupo, gen(num_horagrupo)
+encode diahora, gen(num_diahora)
+encode diagrupo, gen(num_diagrupo)
+
 bys cohort: gen num_fecha = _n
 sort cohort fecha
 order cohort fecha outcome
@@ -332,7 +344,9 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
-
+* Desestacionalizamos:
+qui reg outcome i.weekdaygrupo i.num_horagrupo i.mesgrupo
+predict doutcome, residuals
 
 ******************** Efecto Fijo Moment y Cohort
 
@@ -351,7 +365,7 @@ replace l0 = treat if num_fecha < 6625
 replace l24 = treat if num_fecha > 6649
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(diahora cohort) vce(cl cohort)
+reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
