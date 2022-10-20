@@ -128,6 +128,16 @@ bys state: gen num_fecha = _n
 sort state date
 order state date suicide anxiety depression
 
+tostring weekday, gen(st_weekday)
+tostring ef_hour, gen(st_ef_hour)
+
+gen st_sw = state + " " + st_weekday
+gen st_se = state + " " + st_ef_hour
+
+encode st_sw, gen(stateweekday)
+encode st_se, gen(stateefhour)
+encode state, gen(num_state)
+encode date, gen(moment)
 
 
 /********************************************************************************
@@ -415,106 +425,15 @@ reghdfe ex_aggr treatpost , abs(date dia_estado ef_hour) vce(cluster state)
 
 ********************************************************************************
 
-/*
-
-******************** Efecto Fijo Moment, Estado y Effective Hour 
-
-cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 26
-gen Zero = 0
-
-* Genero leads y lags:
-forvalues i = 0/24 {
-	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 346
-}
-
-* Corremos el Event Studies para Suicide:
-reghdfe suicide l* , abs(date state ef_hour) vce(cl state)
-gen estud_sui = 0
-gen dnic_sui = 0
-gen upic_sui = 0
-forvalues i = 0/24 {
-	replace estud_sui = _b[l`i'] if _n == `i'+1
-	replace dnic_sui =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_sui =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-twoway ///
-(rarea upic_sui dnic_sui cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_sui cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-
-* Corremos el Event Studies para Anxiety:
-reghdfe anxiety l* , abs(date state ef_hour) vce(cl state)
-gen estud_anx = 0
-gen dnic_anx = 0
-gen upic_anx = 0
-forvalues i = 0/24 {
-	replace estud_anx = _b[l`i'] if _n == `i'+1
-	replace dnic_anx =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_anx =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-twoway ///
-(rarea upic_anx dnic_anx cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_anx cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-* Corremos el Event Studies para Depression:
-reghdfe depression l* , abs(date state ef_hour) vce(cl state)
-gen estud_dep = 0
-gen dnic_dep = 0
-gen upic_dep = 0
-forvalues i = 0/24 {
-	replace estud_dep = _b[l`i'] if _n == `i'+1
-	replace dnic_dep =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_dep =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-twoway ///
-(rarea upic_dep dnic_dep cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_dep cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-* Corremos el Event Studies para Index (Levy):
-reghdfe index l* , abs(date state ef_hour) vce(cl state)
-gen estud_ind = 0
-gen dnic_ind = 0
-gen upic_ind = 0
-forvalues i = 0/24 {
-	replace estud_ind = _b[l`i'] if _n == `i'+1
-	replace dnic_ind =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic_ind =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-twoway ///
-(rarea upic_ind dnic_ind cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud_ind cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-*/
-
+* Desestacinalizamos: (ef hour estado, dia semana estado y mes estado)
+qui reg suicide i.stateefhour i.stateweekday
+predict dsuicide, residuals
+qui reg anxiety i.stateefhour i.stateweekday
+predict danxiety, residuals
+qui reg depression i.stateefhour i.stateweekday
+predict ddepression, residuals
+qui reg index i.stateefhour i.stateweekday
+predict dindex, residuals
 
 ******************** Efecto Fijo Moment, Dia x Estado y Effective Hour 
 
@@ -534,15 +453,10 @@ replace l24 = socialm if num_fecha > 358
 
 
 drop l11
-encode state, gen(num_state)
-encode date, gen(moment)
-
-gen nada = 0
-replace nada = 1 if _n == 321
 
 * Corremos el Event Studies para Suicide:
 
-reghdfe suicide l*, abs(moment num_state) vce(cl state)
+reghdfe dsuicide l*, abs(moment num_state) vce(cl state)
 gen estud_sui = 0
 gen dnic_sui = 0
 gen upic_sui = 0
@@ -577,7 +491,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Anxiety:
-reghdfe anxiety l*, abs(moment num_state) vce(cl state)
+reghdfe danxiety l*, abs(moment num_state) vce(cl state)
 gen estud_anx = 0
 gen dnic_anx = 0
 gen upic_anx = 0
@@ -615,7 +529,7 @@ graphregion(color(white)) plotregion(color(white))
 
 *log using "output", replace
 *areg depression l* i.num_state i.ef_hour, abs(moment) vce(cl state)
-reghdfe depression l*, abs(moment num_state) vce(cl state)
+reghdfe ddepression l*, abs(moment num_state) vce(cl state)
 *log close
 *translate "output.smcl" "output.pdf",replace
 gen estud_dep = 0
@@ -653,7 +567,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 * Corremos el Event Studies para Index (Levy 2022):
-reghdfe index l*, abs(moment num_state) vce(cl state)
+reghdfe dindex l*, abs(moment num_state) vce(cl state)
 gen estud_ind = 0
 gen dnic_ind = 0
 gen upic_ind = 0
@@ -695,6 +609,8 @@ graphregion(color(white)) plotregion(color(white))
 ********************************************************************************
 
 merge m:m state date using "$output/wea21", nogen
+qui reg weather i.stateefhour i.stateweekday
+predict dweather, residuals
 
 * Con Event Studies: 
 cap drop cont Zero l* estud* up* dn*
@@ -713,7 +629,7 @@ replace l24 = 1 if num_fecha > 358
 drop l11
 
 * Corremos el Event Studies para Weather:
-reghdfe weather l* , abs(moment num_state) vce(cl state)
+reghdfe dweather l* , abs(moment num_state) vce(cl state)
 gen estud_wea = 0
 gen dnic_wea = 0
 gen upic_wea = 0
