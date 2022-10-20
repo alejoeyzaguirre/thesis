@@ -173,8 +173,17 @@ replace diasemana = 7 if diasemana == 0
 bys cohort: gen num_fecha = _n
 sort cohort fecha
 order cohort fecha outcome
+gen num_fecha2 = round(num_fecha/6) 
 
 
+tostring diasemana, gen(st_diasemana)
+gen st_weekdaygrupo = st_diasemana + " " + st_cohort
+
+tostring mes, gen(st_mes)
+gen st_mesgrupo = st_mes + " " + st_cohort
+
+encode st_mesgrupo, gen(mesgrupo)
+encode st_weekdaygrupo, gen(weekdaygrupo)
 encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
@@ -332,40 +341,9 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
-/******************** Efecto Fijo Cohorte y Moment (Dia x Hora)
-
-cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 26
-gen Zero = 0
-
-* Genero leads y lags:
-forvalues i = 0/24 {
-	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 1718
-}
-
-* Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(cohort diahora diagrupo) vce(cl cohort)
-gen estud = 0
-gen dnic = 0
-gen upic = 0
-forvalues i = 0/24 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-
-twoway ///
-(rarea upic dnic cont,  ///
-fcolor(green%30) lcolor(gs13) lw(none) lpattern(solid)) ///
-(line estud cont, lcolor(blue) lpattern(dash) lwidth(thick)) ///
-(line Zero cont, lcolor(black)), legend(off) ///
-ytitle("Percent", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-*/
+* 1º Desestacionalizamos outcome:
+qui reg outcome i.weekdaygrupo i.num_horagrupo i.mesgrupo
+predict doutcome, residuals
 
 ******************** Efecto Fijo Cohort y Moment
 
@@ -386,9 +364,23 @@ drop l11
 replace l0 = treat if num_fecha < 1694
 replace l30= treat if num_fecha > 1755
 
+gen stateday = 1
+replace stateday = 2 if hora > 3 & hora < 7
+replace stateday = 3 if hora > 6 & hora < 10
+replace stateday = 4 if hora > 9 & hora < 13
+replace stateday = 5 if hora > 12 & hora < 16
+replace stateday = 6 if hora > 15 & hora < 19
+replace stateday = 7 if hora > 18 & hora < 22
+replace stateday = 8 if hora > 21 | hora == 0
+
+tostring stateday, gen(st_stateday)
+gen statecoh = st_cohort + " " + st_stateday
+
+encode statecoh, gen(int_statecoh)
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe outcome l* , abs(cohort diahora) vce(cl cohort)
+reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+*areg outcome l* i.num_horagrupo, abs(diahora)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -428,6 +420,121 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
- legend(off) ytitle("Outcome 2019", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+ legend(off) ytitle("Outcome 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
+
+
+
+********************************************************************************
+
+****************************** Placebo Test ************************************
+
+********************************************************************************
+
+* Corremos el Event Studies para otro miércoles y a la misma hora de la siguiente semana:
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 13 if _n < 32
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 0/30 {
+	gen l`i' = 0
+	replace l`i' = treat if num_fecha == 1886 - (24 - `i'*2)
+	replace l`i' = treat if num_fecha == 1886 - (24 - `i'*2) + 1
+}
+
+
+drop l11
+
+replace l0 = treat if num_fecha < 1862
+replace l30= treat if num_fecha > 1923
+
+* Corremos el Placebo para Outcome "Car Accidents":
+reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+gen estud = 0
+gen dnic = 0
+gen upic = 0
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/30 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+summ upic
+local top_range = r(max)
+summ dnic
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic dnic cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic dnic cont, lcolor(green)) ///
+(line Zero cont, lcolor(black)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome (Placebo) 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+
+
+* Corremos el Event Studies para otro miércoles y a la misma hora de la semana previa:
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 13 if _n < 32
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 0/30 {
+	gen l`i' = 0
+	replace l`i' = treat if num_fecha == 1550 - (24 - `i'*2)
+	replace l`i' = treat if num_fecha == 1550 - (24 - `i'*2) + 1
+}
+
+
+drop l11
+
+replace l0 = treat if num_fecha < 1526
+replace l30= treat if num_fecha > 1587
+
+* Corremos el Placebo para Outcome "Car Accidents":
+reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+gen estud = 0
+gen dnic = 0
+gen upic = 0
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/30 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+summ upic
+local top_range = r(max)
+summ dnic
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic dnic cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic dnic cont, lcolor(green)) ///
+(line Zero cont, lcolor(black)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome (Placebo) 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
