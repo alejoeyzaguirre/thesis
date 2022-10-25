@@ -309,7 +309,6 @@ restore
 preserve
 drop if filter == 0
 
-
 * (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe outcome treatpost , abs(cohort diahora) vce(cluster cohort)
 

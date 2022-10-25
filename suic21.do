@@ -37,7 +37,10 @@ merge m:m state date using "$output/anx", nogen
 merge m:m state date using "$output/dep", nogen
 
 duplicates report
-duplicates drop
+gen botar = date + state
+duplicates drop botar, force
+drop botar
+
 
 sort state date
 order state date suicide anxiety depression
