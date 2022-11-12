@@ -50,7 +50,23 @@ decode comuna, gen(nombrecomuna)
 replace nombrecomuna = "Alhué" if comuna == 13502
 replace nombrecomuna = "Conchalí" if comuna == 13104
 replace nombrecomuna = "Curacaví" if comuna == 13503
-replace nombrecomuna = "Conchalí" if comuna == 13104
+replace nombrecomuna = "Estación Central" if comuna == 13106
+replace nombrecomuna = "Maipú" if comuna == 13119
+replace nombrecomuna = "María Pinto" if comuna == 13504
+replace nombrecomuna = "Peñaflor" if comuna == 13605
+replace nombrecomuna = "Peñalolén" if comuna == 13122
+replace nombrecomuna = "San Joaquín" if comuna == 13129
+replace nombrecomuna = "San José de Maipo" if comuna == 13203
+replace nombrecomuna = "San Ramón" if comuna == 13131
+replace nombrecomuna = "Ñuñoa" if comuna == 13120
+
+
+
+
+
+
+
+
 
 
 
