@@ -17,18 +17,24 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 ********************************************************************************
 
 
-/* Treatment por comunas?
+* Treatment por comunas:
 use "$raw/Internet/casen17", clear
+
+* 
 
 * Nos quedamos solo con las vars relevantes:
 keep comuna expc r21d r21b
 
+
 * Expandimos:
 expand expc
 
-* Vemos el número total de "personas" por comuna:
+* Vemos el número total de "personas" (entrevistadas) por comuna:
 gen id = _n
 egen num = count(id), by(comuna)
+
+* Que porcentaje de los encuestados usa internet para comunicarse por RRSS:
+
 
 * Colapsamos por comuna: ? Qué hago con los missing values?
 collapse (count) r21d r21b 
