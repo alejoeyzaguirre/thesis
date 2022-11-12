@@ -20,10 +20,8 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 * Treatment por comunas:
 use "$raw/Internet/casen17", clear
 
-* 
-
 * Nos quedamos solo con las vars relevantes:
-keep comuna expc r21d r21b
+keep comuna  region expc r21d r21b
 
 
 * Expandimos:
