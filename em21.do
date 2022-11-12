@@ -35,13 +35,25 @@ gen id = _n
 egen num = count(id), by(comuna)
 
 * Que porcentaje de los encuestados usa internet para comunicarse por RRSS:
-replace r21d = 0 if r21d == 2 | r21d == 9
-
+replace r21d = 0 if r21d == 2 | r21d == 9 | r21d == .
 
 * Colapsamos por comuna: ? Qué hago con los missing values?
-collapse (count) r21d r21b 
+collapse (sum) r21d, by(comuna num)
 
-*/
+* Generamos nuestro treatment:
+gen treatment = r21d / num
+
+* Generamos variable string de comuna:
+decode comuna, gen(nombrecomuna) 
+
+* Arreglamos los <?>
+replace nombrecomuna = "Alhué" if comuna == 13502
+replace nombrecomuna = "Conchalí" if comuna == 13104
+replace nombrecomuna = "Curacaví" if comuna == 13503
+replace nombrecomuna = "Conchalí" if comuna == 13104
+
+
+
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
 use "$output/emergencies", clear
@@ -50,7 +62,9 @@ use "$output/emergencies", clear
 tab glosacausa
 keep if idcausa > 34 & idcausa <43
 
-
+* Nos quedamos solo con obs. de la RM:
+gen region = round(códigocomuna / 1000)
+keep if region == 13
 
 * Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
 * de cada día:
