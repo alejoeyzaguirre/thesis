@@ -60,15 +60,8 @@ replace nombrecomuna = "San José de Maipo" if comuna == 13203
 replace nombrecomuna = "San Ramón" if comuna == 13131
 replace nombrecomuna = "Ñuñoa" if comuna == 13120
 
-
-
-
-
-
-
-
-
-
+* Guardamos:
+save "intmun", replace
 
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
@@ -81,6 +74,9 @@ keep if idcausa > 34 & idcausa <43
 * Nos quedamos solo con obs. de la RM:
 gen region = round(códigocomuna / 1000)
 keep if region == 13
+
+/* Figuras: 
+
 
 * Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
 * de cada día:
@@ -119,5 +115,9 @@ replace total = total -1200
 
 set scheme s1color
 statplot total , over(categ) vertical legend(off)
+
+*/
+
+
 
 
