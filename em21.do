@@ -21,8 +21,11 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 use "$raw/Internet/casen17", clear
 
 * Nos quedamos solo con las vars relevantes:
-keep comuna  region expc r21d r21b
+keep comuna region expc r21d r21b
 
+* Dado que CASEN solo tiene info representativa para comunas en RM:
+labellist region
+keep if region == 13
 
 * Expandimos:
 expand expc
@@ -32,6 +35,7 @@ gen id = _n
 egen num = count(id), by(comuna)
 
 * Que porcentaje de los encuestados usa internet para comunicarse por RRSS:
+replace r21d = 0 if r21d == 2 | r21d == 9
 
 
 * Colapsamos por comuna: ? Qué hago con los missing values?
