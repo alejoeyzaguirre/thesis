@@ -12,7 +12,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 
 ********************************************************************************
 
-**************************** Usando Datos 2021 *********************************
+******************** Preparación Treatment x Comuna ****************************
 
 ********************************************************************************
 
@@ -61,7 +61,14 @@ replace nombrecomuna = "San Ramón" if comuna == 13131
 replace nombrecomuna = "Ñuñoa" if comuna == 13120
 
 * Guardamos:
-save "intmun", replace
+save "$output/intmun", replace
+
+
+********************************************************************************
+
+************************** Usando Datos EM 2021 ********************************
+
+********************************************************************************
 
 
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
@@ -76,12 +83,7 @@ gen region = round(códigocomuna / 1000)
 keep if region == 13
 
 /* Figuras: 
-
-
-* Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
-* de cada día:
 collapse (sum) total, by(dia mes)
-sort mes dia
 
 gen diasemana = 0
 replace diasemana = mod(dia+4,7) if mes == 1
@@ -117,6 +119,49 @@ set scheme s1color
 statplot total , over(categ) vertical legend(off)
 
 */
+
+* Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
+* de cada día:
+collapse (sum) total, by(dia mes nombrecomuna códigocomuna)
+sort nombrecomuna mes dia
+
+* Juntamos con base de Treatment a partir de CASEN 2017.
+merge m:1 nombrecomuna using "$output/intmun", nogen 
+
+* Generamos variable treat*during
+gen treatpost = 0
+replace treatpost = treatment if dia == 4 & mes == 10
+
+drop if dia > 4 & mes == 10 | mes > 10
+
+
+* Ahora limpiamos de estacionalidad la variable total:
+gen diasemana = 0
+replace diasemana = mod(dia+4,7) if mes == 1
+replace diasemana = mod(dia+0,7) if mes == 2
+replace diasemana = mod(dia+0,7) if mes == 3
+replace diasemana = mod(dia+3,7) if mes == 4
+replace diasemana = mod(dia+5,7) if mes == 5
+replace diasemana = mod(dia+1,7) if mes == 6
+replace diasemana = mod(dia+3,7) if mes == 7
+replace diasemana = mod(dia+6,7) if mes == 8
+replace diasemana = mod(dia+2,7) if mes == 9
+replace diasemana = mod(dia+4,7) if mes == 10
+replace diasemana = mod(dia+0,7) if mes == 11
+replace diasemana = mod(dia+2,7) if mes == 12
+replace diasemana = 7 if diasemana == 0
+
+bys nombrecomuna: gen num_fecha = _n
+
+/*
+reg total diasemana mes dia
+predict dtotal, res
+*/
+
+reghdfe total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+
+* Efecto Fijo 
 
 
 
