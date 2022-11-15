@@ -257,7 +257,6 @@ reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombre
 reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
-
 * MARGEN EXTENSIVO
 gen ex_total = (total > 0)
 
