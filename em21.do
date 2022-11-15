@@ -132,7 +132,7 @@ merge m:1 nombrecomuna using "$output/intmun", nogen
 gen treatpost = 0
 replace treatpost = treatment if dia == 4 & mes == 10
 
-drop if dia > 4 & mes == 10 | mes > 10
+
 
 
 * Ahora limpiamos de estacionalidad la variable total:
@@ -152,17 +152,143 @@ replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
 
 bys nombrecomuna: gen num_fecha = _n
+tostring diasemana, gen(st_diasemana)
+tostring mes, gen(st_mes)
 
-/*
-reg total diasemana mes dia
+gen st_weekday_x_comuna = nombrecomuna + " " + st_diasemana
+gen st_mes_x_comuna = nombrecomuna + " " + st_mes
+
+encode st_weekday_x_comuna, gen(weekday_x_comuna)
+encode st_mes_x_comuna, gen(mes_x_comuna)
+
+
+reg total i.weekday_x_comuna i.mes_x_comuna
 predict dtotal, res
-*/
 
+
+********************************************************************************
+
+************************* Diferencias-en-Diferencias ***************************
+
+********************************************************************************
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
 reghdfe total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
-* Efecto Fijo 
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
+
+* MARGEN EXTENSIVO
+gen ex_total = (total > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+restore
+
+
+********************************************************************************
+
+************************* Placebo Tests ****************************************
+
+********************************************************************************
+
+
+preserve
+drop if dia > 28 & mes == 9 | mes > 9
+gen treatpost2 = 0
+replace treatpost2 = treatment if dia == 28 & mes == 9
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe total treatpost2, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+
+
+
+* MARGEN EXTENSIVO
+gen ex_total = (total > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+restore
+
+
+preserve
+drop if dia > 11 & mes == 10 | mes > 10
+gen treatpost3 = 0
+replace treatpost3 = treatment if dia == 11 & mes == 10
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+
+
+
+* MARGEN EXTENSIVO
+gen ex_total = (total > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+restore
+
+
+
+
+preserve
+sum treatment, d
+gen status = (treatment >= 0.602) // High penetration above median.
+sum total if status == 0
+gen av_out0 = r(mean)
+sum total if status == 1
+gen av_out1 = r(mean)
+collapse (mean) total av_out0 av_out1, by(dia mes status)
+sort status mes dia
+* Only compare during outage observations:
+keep if (dia == 4 & mes == 10)
+collapse (mean) total av_out0 av_out1, by(status)
+gen rel_out = 0
+replace rel_out = total / av_out0 - 1 if status == 0
+replace rel_out = total / av_out1 - 1 if status == 1
+statplot rel_out , over(status) vertical legend(off)
+restore
 
 
