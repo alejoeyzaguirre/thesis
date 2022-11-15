@@ -83,6 +83,10 @@ gen region = round(códigocomuna / 1000)
 keep if region == 13
 
 /* Figuras: 
+
+* Outcome during Outage:
+
+preserve
 collapse (sum) total, by(dia mes)
 
 gen diasemana = 0
@@ -117,6 +121,29 @@ replace total = total -1200
 
 set scheme s1color
 statplot total , over(categ) vertical legend(off)
+restore 
+
+* Treatment Nature:
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+sum treatment, d
+gen status = (treatment >= 0.602) // High penetration above median.
+sum total if status == 0
+gen av_out0 = r(mean)
+sum total if status == 1
+gen av_out1 = r(mean)
+collapse (mean) total av_out0 av_out1, by(dia mes status)
+sort status mes dia
+* Only compare during outage observations:
+keep if (dia == 4 & mes == 10)
+collapse (mean) total av_out0 av_out1, by(status)
+gen rel_out = 0
+replace rel_out = total / av_out0 - 1 if status == 0
+replace rel_out = total / av_out1 - 1 if status == 1
+statplot rel_out , over(status) vertical legend(off)
+restore
+
 
 */
 
@@ -342,23 +369,5 @@ graphregion(color(white)) plotregion(color(white))
 
 
 
-preserve
-drop if dia > 4 & mes == 10 | mes > 10
-sum treatment, d
-gen status = (treatment >= 0.602) // High penetration above median.
-sum total if status == 0
-gen av_out0 = r(mean)
-sum total if status == 1
-gen av_out1 = r(mean)
-collapse (mean) total av_out0 av_out1, by(dia mes status)
-sort status mes dia
-* Only compare during outage observations:
-keep if (dia == 4 & mes == 10)
-collapse (mean) total av_out0 av_out1, by(status)
-gen rel_out = 0
-replace rel_out = total / av_out0 - 1 if status == 0
-replace rel_out = total / av_out1 - 1 if status == 1
-statplot rel_out , over(status) vertical legend(off)
-restore
 
 
