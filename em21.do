@@ -151,6 +151,7 @@ replace diasemana = mod(dia+0,7) if mes == 11
 replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
 
+sort nombrecomuna mes dia
 bys nombrecomuna: gen num_fecha = _n
 tostring diasemana, gen(st_diasemana)
 tostring mes, gen(st_mes)
@@ -272,8 +273,83 @@ restore
 
 
 
+********************************************************************************
+
+****************************** Event Studies ***********************************
+
+********************************************************************************
+
+* NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
+
+* Desestacionalizamos:
+qui reg total i.weekday_x_comuna i.mes_x_comuna
+predict dtotal, res
+
+******************** Efecto Fijo Moment y Cohort
+
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 13 if _n < 26
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 0/24 {
+	gen l`i' = 0
+	replace l`i' = treat if num_fecha == `i' - 12 + 6637
+}
+
+drop l11
+replace l0 = treat if num_fecha < 6625
+replace l24 = treat if num_fecha > 6649
+
+* Corremos el Event Studies para Outcome "Car Accidents":
+reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+gen estud = 0
+gen dnic = 0
+gen upic = 0
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+forvalues i = 12/24 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+}
+
+/*
+summ estud if _n == 12
+local menosuno = r(mean)
+
+replace estud = estud - `menosuno'
+replace dnic = dnic - `menosuno'
+replace upic = upic - `menosuno'
+replace estud = 0 if _n == 12
+replace dnic = 0 if _n == 12
+replace upic= 0 if _n == 12
+*/
+
+summ upic
+local top_range = r(max)
+summ dnic
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic dnic cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic dnic cont, lcolor(green)) ///
+(line Zero cont, lcolor(black)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
 
 preserve
+drop if dia > 4 & mes == 10 | mes > 10
 sum treatment, d
 gen status = (treatment >= 0.602) // High penetration above median.
 sum total if status == 0
