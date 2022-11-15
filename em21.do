@@ -16,7 +16,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 
 ********************************************************************************
 
-
+/*
 * Treatment por comunas:
 use "$raw/Internet/casen17", clear
 
@@ -62,7 +62,7 @@ replace nombrecomuna = "Ñuñoa" if comuna == 13120
 
 * Guardamos:
 save "$output/intmun", replace
-
+*/
 
 ********************************************************************************
 
@@ -161,10 +161,6 @@ gen st_mes_x_comuna = nombrecomuna + " " + st_mes
 
 encode st_weekday_x_comuna, gen(weekday_x_comuna)
 encode st_mes_x_comuna, gen(mes_x_comuna)
-
-
-reg total i.weekday_x_comuna i.mes_x_comuna
-predict dtotal, res
 
 
 ********************************************************************************
@@ -293,15 +289,15 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 6637
+	replace l`i' = treatment if num_fecha == `i' - 12 + 277
 }
 
 drop l11
-replace l0 = treat if num_fecha < 6625
-replace l24 = treat if num_fecha > 6649
+replace l0 = treatment if num_fecha < 265
+replace l24 = treatment if num_fecha > 289
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+reghdfe dtotal l* , abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -339,8 +335,7 @@ fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
 (rcap upic dnic cont, lcolor(green)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
-(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
 note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
