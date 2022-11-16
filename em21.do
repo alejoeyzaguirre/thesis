@@ -17,11 +17,11 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 ********************************************************************************
 
 
-* Treatment por comunas:
+/* Treatment por comunas:
 use "$raw/Internet/casen17", clear
 
 * Nos quedamos solo con las vars relevantes:
-keep comuna region expc r21d r21b
+keep comuna region expc r21d
 
 * Dado que CASEN solo tiene info representativa para comunas en RM:
 labellist region
@@ -62,7 +62,6 @@ replace nombrecomuna = "San Joaquín" if comuna == 13129
 replace nombrecomuna = "San José de Maipo" if comuna == 13203
 replace nombrecomuna = "San Ramón" if comuna == 13131
 replace nombrecomuna = "Ñuñoa" if comuna == 13120
-replace nombrecomuna = "Ñuñoa" if comuna == 13120
 
 replace nombrecomuna = "Alto Biobío" if comuna == 8314
 replace nombrecomuna = "Aysén" if comuna == 11201
@@ -91,7 +90,7 @@ replace nombrecomuna = "Los Álamos" if comuna == 8206
 replace nombrecomuna = "Los Ángeles" if comuna == 8301
 replace nombrecomuna = "Machalí" if comuna == 6108
 replace nombrecomuna = "María Elena" if comuna == 2302
-replace nombrecomuna = "Maullín" if comuna == 13120
+replace nombrecomuna = "Maullín" if comuna == 10108
 replace nombrecomuna = "Mulchén" if comuna == 8305
 replace nombrecomuna = "Máfil" if comuna == 14105
 replace nombrecomuna = "Olmué" if comuna == 5803
@@ -127,54 +126,6 @@ replace nombrecomuna = "Viña del Mar" if comuna == 5109
 replace nombrecomuna = "Ñiquén" if comuna == 16303
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 * Guardamos:
 save "$output/intmun", replace
 */
@@ -190,20 +141,27 @@ save "$output/intmun", replace
 use "$output/emergencies", clear
 
 * Me quedo solo con causas relacionadas a salud mental: : ()
-tab glosacausa
+*tab glosacausa
 keep if idcausa > 34 & idcausa <43
 
 * Nos quedamos solo con obs. de la RM:
 gen region = round(códigocomuna / 1000)
 keep if region == 13
 
-/* Figuras: 
+* Cambiamos nombre de Vars:
+rename _5_64 g15_64
+rename _5_mas g65
+rename __14 g5_15
+rename column7 g1_4
+rename menor_a_1 g0
 
-* Outcome during Outage:
+
+* Figuras: 
+
+/* FIGURA 1: Outcome during Outage:
 
 preserve
 collapse (sum) total, by(dia mes)
-
 gen diasemana = 0
 replace diasemana = mod(dia+4,7) if mes == 1
 replace diasemana = mod(dia+0,7) if mes == 2
@@ -218,27 +176,43 @@ replace diasemana = mod(dia+4,7) if mes == 10
 replace diasemana = mod(dia+0,7) if mes == 11
 replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
-
 gen during = 99
 replace during = 0 if (dia > 12 & mes == 9) | (dia < 4 & mes == 10)
 replace during = 1 if dia == 4 & mes == 10
 replace during = 2 if (dia > 4 & dia < 26 & mes == 10) 
 drop if during == 99
-
 collapse (mean) total, by(diasemana during)
-
 drop if during == 2
 replace during = -1 if during == 1
 sort diasemana during
 gen categ = _n
-
 replace total = total -1200
-
 set scheme s1color
 statplot total , over(categ) vertical legend(off)
 restore 
+*/
 
-* Treatment Nature:
+* Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
+* de cada día:
+drop glosacausa
+collapse (sum) total g*, by(dia mes nombrecomuna códigocomuna)
+sort nombrecomuna mes dia
+
+* Juntamos con base de Treatment a partir de CASEN 2017.
+merge m:1 nombrecomuna using "$output/intmun", nogen 
+
+* Botamos Comunas que no están en la CASEN 17
+drop if treatment == .
+
+* Generamos variable treat*during
+gen treatpost = 0
+replace treatpost = treatment if dia == 4 & mes == 10
+
+* Generamos de nuevo variable región:
+gen region = round(códigocomuna / 1000)
+
+
+/* FIGURA 2: Treatment Nature:
 
 preserve
 drop if dia > 4 & mes == 10 | mes > 10
@@ -258,23 +232,7 @@ replace rel_out = total / av_out0 - 1 if status == 0
 replace rel_out = total / av_out1 - 1 if status == 1
 statplot rel_out , over(status) vertical legend(off)
 restore
-
-
 */
-
-* Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
-* de cada día:
-collapse (sum) total, by(dia mes nombrecomuna códigocomuna)
-sort nombrecomuna mes dia
-
-* Juntamos con base de Treatment a partir de CASEN 2017.
-merge m:1 nombrecomuna using "$output/intmun", nogen 
-
-* Generamos variable treat*during
-gen treatpost = 0
-replace treatpost = treatment if dia == 4 & mes == 10
-
-
 
 
 * Ahora limpiamos de estacionalidad la variable total:
@@ -317,27 +275,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+reghdfe total treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
-
+reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_total = (total > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
 restore
 
 
@@ -422,6 +379,7 @@ restore
 qui reg total i.weekday_x_comuna i.mes_x_comuna
 predict dtotal, res
 
+
 ******************** Efecto Fijo Moment y Cohort
 
 cap drop cont Zero l* estud* up* dn*
@@ -483,6 +441,139 @@ note("Notes: 95 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
 
+********************************************************************************
 
+********************************* Mechanisms ***********************************
+
+********************************************************************************
+
+
+
+* Menores a 1:
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe g0 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+
+
+* MARGEN EXTENSIVO
+gen ex_g0 = (g0 > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+restore
+
+
+
+* Entre 5 y 14:
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+
+
+* MARGEN EXTENSIVO
+gen ex_g5_15 = (g5_15 > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+restore
+
+
+
+
+* Entre 15 y 65:
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+
+
+* MARGEN EXTENSIVO
+gen ex_g15_64 = (g15_64 > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+restore
+
+
+
+* Entre 65 o +:
+
+preserve
+drop if dia > 4 & mes == 10 | mes > 10
+
+* MARGEN INTENSIVO
+
+* Efecto Fijo TWFE
+reghdfe g65 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+
+
+* MARGEN EXTENSIVO
+gen ex_g65 = (g65 > 0)
+
+* Efecto Fijo TWFE
+reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna
+reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+
+* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
+reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+restore
 
 
