@@ -16,7 +16,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Urgencias"
 
 ********************************************************************************
 
-/*
+
 * Treatment por comunas:
 use "$raw/Internet/casen17", clear
 
@@ -25,7 +25,7 @@ keep comuna region expc r21d r21b
 
 * Dado que CASEN solo tiene info representativa para comunas en RM:
 labellist region
-keep if region == 13
+*keep if region == 13
 
 * Expandimos:
 expand expc
@@ -46,6 +46,9 @@ gen treatment = r21d / num
 * Generamos variable string de comuna:
 decode comuna, gen(nombrecomuna) 
 
+sort nombrecomuna
+gen numerocomuna = int(comuna)
+
 * Arreglamos los <?>
 replace nombrecomuna = "Alhué" if comuna == 13502
 replace nombrecomuna = "Conchalí" if comuna == 13104
@@ -59,6 +62,118 @@ replace nombrecomuna = "San Joaquín" if comuna == 13129
 replace nombrecomuna = "San José de Maipo" if comuna == 13203
 replace nombrecomuna = "San Ramón" if comuna == 13131
 replace nombrecomuna = "Ñuñoa" if comuna == 13120
+replace nombrecomuna = "Ñuñoa" if comuna == 13120
+
+replace nombrecomuna = "Alto Biobío" if comuna == 8314
+replace nombrecomuna = "Aysén" if comuna == 11201
+replace nombrecomuna = "Camiña" if comuna == 1402
+replace nombrecomuna = "Cañete" if comuna == 8203
+replace nombrecomuna = "Chañaral" if comuna == 3201
+replace nombrecomuna = "Chillán" if comuna == 16101
+replace nombrecomuna = "Chillán Viejo" if comuna == 16103
+replace nombrecomuna = "Chépica" if comuna == 6302
+replace nombrecomuna = "Colbún" if comuna == 7402
+replace nombrecomuna = "Combarbalá" if comuna == 4302
+replace nombrecomuna = "Concepción" if comuna == 8101
+replace nombrecomuna = "Concón" if comuna == 5103
+replace nombrecomuna = "Constitución" if comuna == 7102
+replace nombrecomuna = "Copiapó" if comuna == 3101
+replace nombrecomuna = "Curacautín" if comuna == 9203
+replace nombrecomuna = "Curaco de Vélez" if comuna == 10204
+replace nombrecomuna = "Curicó" if comuna == 7301
+replace nombrecomuna = "Doñihue" if comuna == 6105
+replace nombrecomuna = "Hualañé" if comuna == 7302
+replace nombrecomuna = "Hualpén" if comuna == 8112
+replace nombrecomuna = "La Unión" if comuna == 14201
+replace nombrecomuna = "Licantén" if comuna == 7303
+replace nombrecomuna = "Longaví" if comuna == 7403
+replace nombrecomuna = "Los Álamos" if comuna == 8206
+replace nombrecomuna = "Los Ángeles" if comuna == 8301
+replace nombrecomuna = "Machalí" if comuna == 6108
+replace nombrecomuna = "María Elena" if comuna == 2302
+replace nombrecomuna = "Maullín" if comuna == 13120
+replace nombrecomuna = "Mulchén" if comuna == 8305
+replace nombrecomuna = "Máfil" if comuna == 14105
+replace nombrecomuna = "Olmué" if comuna == 5803
+replace nombrecomuna = "Pitrufquén" if comuna == 9114
+replace nombrecomuna = "Puchuncaví" if comuna == 5105
+replace nombrecomuna = "Pucón" if comuna == 9115
+replace nombrecomuna = "Puqueldón" if comuna == 10206
+replace nombrecomuna = "Purén" if comuna == 9208
+replace nombrecomuna = "Queilén" if comuna == 10207
+replace nombrecomuna = "Quellón" if comuna == 10208
+replace nombrecomuna = "Quillón" if comuna == 16107
+replace nombrecomuna = "Quilpué" if comuna == 5801
+replace nombrecomuna = "Requínoa" if comuna == 6116
+replace nombrecomuna = "Ránquil" if comuna == 16206
+replace nombrecomuna = "Río Bueno" if comuna == 14204
+replace nombrecomuna = "Río Claro" if comuna == 7108
+replace nombrecomuna = "Río Hurtado" if comuna == 4305
+replace nombrecomuna = "Río Ibáñez" if comuna == 11402
+replace nombrecomuna = "Río Negro" if comuna == 10305
+replace nombrecomuna = "San Fabián" if comuna == 16304
+replace nombrecomuna = "San Nicolás" if comuna == 16305
+replace nombrecomuna = "Santa Bárbara" if comuna == 8311
+replace nombrecomuna = "Santa María" if comuna == 5706
+replace nombrecomuna = "Tirúa" if comuna == 8207
+replace nombrecomuna = "Toltén" if comuna == 9118
+replace nombrecomuna = "Tomé" if comuna == 8111
+replace nombrecomuna = "Traiguén" if comuna == 9210
+replace nombrecomuna = "Valparaíso" if comuna == 5101
+replace nombrecomuna = "Vichuquén" if comuna == 7309
+replace nombrecomuna = "Vicuña" if comuna == 4106
+replace nombrecomuna = "Vilcún" if comuna == 9119
+replace nombrecomuna = "Viña del Mar" if comuna == 5109
+replace nombrecomuna = "Ñiquén" if comuna == 16303
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 * Guardamos:
 save "$output/intmun", replace
