@@ -383,30 +383,30 @@ predict dtotal, res
 ******************** Efecto Fijo Moment y Cohort
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 26
+gen cont = _n - 5 if _n < 10
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/24 {
+forvalues i = 0/8 {
 	gen l`i' = 0
-	replace l`i' = treatment if num_fecha == `i' - 12 + 277
+	replace l`i' = treatment if num_fecha == `i' - 4 + 277
 }
 
-drop l11
-replace l0 = treatment if num_fecha < 265
-replace l24 = treatment if num_fecha > 289
+drop l3
+replace l0 = treatment if num_fecha < 273
+replace l8 = treatment if num_fecha > 281
 
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe dtotal l* , abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
-forvalues i = 0/10 {
+forvalues i = 0/2 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
 }
-forvalues i = 12/24 {
+forvalues i = 4/8 {
 	replace estud = _b[l`i'] if _n == `i'+1
 	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
 	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
