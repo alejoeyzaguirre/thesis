@@ -109,21 +109,19 @@ replace post = 1 if dia == 4 & mes == 10 & hora > 11 & hora < 20
 * Importamos Variable Treatment:
 merge m:1 codcomuna using "Urgencias/intmun", nogen 
 
-
-
 * Generamos variable treat*post:
 gen treatpost = treat*post
-
 
 * Efecto Fijo Dia+Hora:
 gen diahora = fecha + hora1
 
+
 * Efecto Fijo Grupo+Hora:
-tostring cohort, gen(st_cohort)
-gen horagrupo = st_cohort + hora1
+tostring idcomuna, gen(st_idcomuna)
+gen horagrupo = st_idcomuna + hora1
 
 * Efecto Fijo Grupo x Día
-gen diagrupo = fecha + st_cohort
+gen diagrupo = fecha + st_idcomuna
 
 * Reemplazamos con cero en los outcomes vacíos:
 replace outcome = 0 if outcome == .
@@ -145,10 +143,10 @@ replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
 
 tostring diasemana, gen(st_diasemana)
-gen st_weekdaygrupo = st_diasemana + " " + st_cohort
+gen st_weekdaygrupo = st_diasemana + " " + st_idcomuna
 
 tostring mes, gen(st_mes)
-gen st_mesgrupo = st_mes + " " + st_cohort
+gen st_mesgrupo = st_mes + " " + st_idcomuna
 
 encode st_mesgrupo, gen(mesgrupo)
 encode st_weekdaygrupo, gen(weekdaygrupo)
@@ -156,9 +154,9 @@ encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
 
-bys cohort: gen num_fecha = _n
-sort cohort fecha
-order cohort fecha outcome
+bys idcomuna: gen num_fecha = _n
+sort idcomuna fecha
+order idcomuna fecha outcome
 
 
 /********************************************************************************
@@ -284,26 +282,26 @@ preserve
 drop if filter == 0
 
 * (1) Con Efecto Fijo Grupo y Hora-Día:
-reghdfe outcome treatpost , abs(cohort diahora) vce(cluster cohort)
+reghdfe outcome treatpost , abs(idcomuna diahora) vce(cluster idcomuna)
 
 * (2) Con Efecto Fijo Grupo, Hora-Día y HoraxGrupo:
-reghdfe outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
+reghdfe outcome treatpost , abs(diahora horagrupo) vce(cluster idcomuna)
 
 * (3) Con Efecto Fijo Grupo, Hora-Día, HoraxGrupo y DiaxGrupo:
-reghdfe outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohort)
+reghdfe outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster idcomuna)
 
 * MARGEN EXTENSIVO:
 
 gen ex_outcome = (outcome > 0)
 
 * (1) Con Efecto Fijo Grupo y Hora-Día:
-reghdfe ex_outcome treatpost , abs(cohort diahora) vce(cluster cohort)
+reghdfe ex_outcome treatpost , abs(idcomuna diahora) vce(cluster idcomuna)
 
 * (2) Con Efecto Fijo Hora-Día y HoraxGrupo:
-reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
+reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster idcomuna)
 
 * (3) Con Efecto Fijo Grupo, Hora-Día, HoraxGrupo y DiaxGrupo:
-reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohort)
+reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster idcomuna)
 
 restore
 
@@ -330,15 +328,15 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treat if num_fecha == `i' - 12 + 6637
+	replace l`i' = treatment if num_fecha == `i' - 12 + 6637
 }
 
 drop l11
-replace l0 = treat if num_fecha < 6625
-replace l24 = treat if num_fecha > 6649
+replace l0 = treatment if num_fecha < 6625
+replace l24 = treatment if num_fecha > 6649
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
