@@ -159,7 +159,7 @@ sort idcomuna fecha
 order idcomuna fecha outcome
 
 
-/********************************************************************************
+********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -175,7 +175,7 @@ collapse (mean) outcome, by(date dia mes hora)
 keep if _n > 6624 & _n < 6793
 gen cont = _n / 24
 gen during = .
-replace during = 3 if dia == 4 & mes == 10 & hora > 11 & hora < 20
+replace during = 0.5 if dia == 4 & mes == 10 & hora > 11 & hora < 20
 twoway (area during cont, color(gs14))(line outcome cont) 
 graph save "plots/outage.gph", replace
 restore
