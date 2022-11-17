@@ -125,6 +125,7 @@ replace nombrecomuna = "Vilcún" if comuna == 9119
 replace nombrecomuna = "Viña del Mar" if comuna == 5109
 replace nombrecomuna = "Ñiquén" if comuna == 16303
 
+gen codcomuna = numerocomuna
 
 * Guardamos:
 save "$output/intmun", replace
