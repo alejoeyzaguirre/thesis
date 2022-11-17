@@ -205,8 +205,8 @@ grc1leg2 "plots/preout.gph" "plots/outage.gph" "plots/postout.gph"
 
 * 2. LINEAR RELATIONSHIP
 preserve
-collapse (mean) outcome treat, by(cohort)
-twoway (scatter outcome treat) (lfit outcome treat)
+collapse (mean) outcome treatment, by(idcomuna)
+twoway (scatter outcome treatment) (lfit outcome treatment)
 restore
 
 
@@ -247,8 +247,8 @@ restore
 
 * 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
 preserve
-sum treat, d
-gen status = (treat >= 0.789) // High penetration above median.
+sum treatment, d
+gen status = (treatment >= 0.602) // High penetration above median.
 sum outcome if status == 0
 gen av_out0 = r(mean)
 sum outcome if status == 1
