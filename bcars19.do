@@ -3,7 +3,6 @@
 * Alejo Eyzaguirre
 
 clear all 
-
 cd "/Users/alejoeyzaguirre/Desktop/Tesis/Datos"
 
 global raw "/Users/alejoeyzaguirre/Desktop/Tesis/Datos" 
@@ -171,7 +170,7 @@ encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
 
-/********************************************************************************
+********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -187,7 +186,7 @@ collapse (mean) outcome, by(date dia mes hora)
 keep if _n > 1656 & _n < 1825
 gen cont = _n / 24
 gen during = 0
-replace during = 3 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia == 14 & hora < 13)
+replace during = 0.6 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia == 14 & hora < 13)
 twoway (area during cont, color(gs14))(line outcome cont) 
 graph save "plots/outage2.gph", replace
 restore
@@ -283,7 +282,7 @@ restore
 ************************* Diferencias-en-Diferencias ***************************
 
 ********************************************************************************
-
+gen ex_outcome = (outcome > 0)
 
 * MARGEN INTENSIVO:
 * Botamos observaciones post apagón:
@@ -301,8 +300,6 @@ reghdfe outcome treatpost , abs(diahora horagrupo) vce(cluster idcomuna)
 reghdfe outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster idcomuna)
 
 * MARGEN EXTENSIVO:
-
-gen ex_outcome = (outcome > 0)
 
 * (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe ex_outcome treatpost , abs(idcomuna diahora) vce(cluster idcomuna)
@@ -325,7 +322,7 @@ restore
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
 * 1º Desestacionalizamos outcome:
-qui reg outcome i.weekdaygrupo i.num_horagrupo i.mesgrupo
+qui probit ex_outcome i.weekdaygrupo i.num_horagrupo
 predict doutcome, residuals
 
 ******************** Efecto Fijo Cohort y Moment
@@ -347,8 +344,9 @@ drop l11
 replace l0 = treatment if num_fecha < 1694
 replace l30= treatment if num_fecha > 1755
 
+
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
+reghdfe ex_outcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -462,7 +460,7 @@ replace l0 = treatment if num_fecha < 1526
 replace l30= treatment if num_fecha > 1587
 
 * Corremos el Placebo para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora cohort) vce(cl cohort)
+reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
