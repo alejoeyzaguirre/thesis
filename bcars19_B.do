@@ -66,7 +66,7 @@ gen age = real(edad)
 keep if calidad == "CONDUCTOR"
 
 * Filtramos para 1º Grupo de Edad: MENORES DE 40:
-keep if age < 40
+keep if age > 39 & age < 60
 
 
 * Recopilamos número de conductores involucrados en un accidente en cada hora y 
@@ -170,7 +170,7 @@ encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
