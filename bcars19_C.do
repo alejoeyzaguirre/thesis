@@ -11,7 +11,7 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Car Accidents"
 
 ********************************************************************************
 
-************************** Usando Datos 2019 (40<60) ***************************
+************************** Usando Datos 2019 (>60) *****************************
 
 ********************************************************************************
 
@@ -66,7 +66,7 @@ gen age = real(edad)
 keep if calidad == "CONDUCTOR"
 
 * Filtramos para 1º Grupo de Edad: MENORES DE 40:
-keep if age < 40
+keep if age > 59
 
 
 * Recopilamos número de conductores involucrados en un accidente en cada hora y 
