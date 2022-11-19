@@ -185,7 +185,7 @@ preserve
 collapse (mean) outcome, by(date dia mes hora)
 keep if _n > 1656 & _n < 1825
 gen cont = _n / 24
-gen during = 0
+gen during = .
 replace during = 0.6 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia == 14 & hora < 13)
 twoway (area during cont, color(gs14))(line outcome cont) 
 graph save "plots/outage2.gph", replace
@@ -196,7 +196,7 @@ preserve
 collapse (mean) outcome, by(date hora)
 keep if _n < 1657 & _n > 1488
 gen cont = _n / 24
-gen during = 0
+gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
 graph save "plots/preout2.gph", replace
 restore
@@ -206,7 +206,7 @@ preserve
 collapse (mean) outcome, by(date hora)
 keep if _n > 1824 & _n < 1994
 gen cont = _n / 24
-gen during = 0
+gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
 graph save "plots/postout2.gph", replace
 restore
@@ -216,13 +216,12 @@ grc1leg2 "plots/preout2.gph" "plots/outage2.gph" "plots/postout2.gph"
 
 * 2. LINEAR RELATIONSHIP
 preserve
-collapse (mean) outcome treat, by(cohort)
-twoway (scatter outcome treat) (lfit outcome treat)
+collapse (mean) outcome treatment, by(idcomuna)
+twoway (scatter outcome treatment) (lfit outcome treatment)
 restore
 
 
 * 3. SEASONALLY ADJUSTED TRENDS PER DAY
-gen num_fecha2 = round(num_fecha/6)
 
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
@@ -256,8 +255,8 @@ restore
 
 * 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
 preserve
-sum treat, d
-gen status = (treat >= 0.732) // High penetration above median.
+sum treatment, d
+gen status = (treatment >= .6023793) // High penetration above median.
 sum outcome if status == 0
 gen av_out0 = r(mean)
 sum outcome if status == 1
@@ -321,8 +320,9 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
+
 * 1º Desestacionalizamos outcome:
-qui probit ex_outcome i.weekdaygrupo i.num_horagrupo
+qui reg outcome i.hora i.diasemana i.mes i.weekdaygrupo
 predict doutcome, residuals
 
 ******************** Efecto Fijo Cohort y Moment
@@ -341,12 +341,13 @@ forvalues i = 0/30 {
 
 drop l11
 
+/*
 replace l0 = treatment if num_fecha < 1694
 replace l30= treatment if num_fecha > 1755
-
+*/
 
 * Corremos el Event Studies para Outcome "Car Accidents":
-reghdfe ex_outcome l* , abs(diahora idcomuna) vce(cl idcomuna)
+reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
 gen dnic = 0
 gen upic = 0
@@ -402,8 +403,10 @@ forvalues i = 0/30 {
 
 drop l11
 
+/*
 replace l0 = treatment if num_fecha < 1862
 replace l30= treatment if num_fecha > 1923
+*/
 
 * Corremos el Placebo para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
@@ -456,8 +459,10 @@ forvalues i = 0/30 {
 
 drop l11
 
+
 replace l0 = treatment if num_fecha < 1526
 replace l30= treatment if num_fecha > 1587
+
 
 * Corremos el Placebo para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
