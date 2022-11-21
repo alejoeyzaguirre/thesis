@@ -450,7 +450,7 @@ graphregion(color(white)) plotregion(color(white))
 
 
 
-* Menores a 1:
+* Entre 1 a 4 años:
 
 preserve
 drop if dia > 4 & mes == 10 | mes > 10
@@ -458,26 +458,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe g0 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
-gen ex_g0 = (g0 > 0)
+gen ex_g1_4 = (g1_4 > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_g0 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
 restore
 
 
