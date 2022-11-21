@@ -235,8 +235,8 @@ gen up = .
 gen down = .
 
 * Plot
-replace up = 2 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
-replace down = -1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+replace up = 0.25 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+replace down = -0.25 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
 */ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
 */ (line plot_out hora if period == 2, lcolor(red*.5)) 
