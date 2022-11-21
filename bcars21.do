@@ -381,3 +381,131 @@ note("Notes: 95 and 90 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
 
+
+********************************************************************************
+
+****************************** Placebo Tests ***********************************
+
+********************************************************************************
+
+* Semana POST:
+
+******************** Efecto Fijo Moment y Cohort
+
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 13 if _n < 26
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 0/24 {
+	gen l`i' = 0
+	replace l`i' = treatment if num_fecha == `i' - 12 + 6805
+}
+
+drop l11
+replace l0 = treatment if num_fecha < 6793
+replace l24 = treatment if num_fecha > 6817
+
+* Corremos el Event Studies para Outcome "Car Accidents":
+reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
+gen estud = 0
+gen dnic90 = 0
+gen upic90 = 0
+gen dnic95 = 0
+gen upic95 = 0
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+
+}
+forvalues i = 12/24 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+}
+
+
+
+summ upic95
+local top_range = r(max)
+summ dnic95
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic95 dnic95 cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic95 dnic95 cont, lcolor(green%60)) ///
+(line Zero cont, lcolor(black)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 and 90 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
+
+* Semana PRE:
+
+******************** Efecto Fijo Moment y Cohort
+
+cap drop cont Zero l* estud* up* dn*
+gen cont = _n - 13 if _n < 26
+gen Zero = 0
+
+* Genero leads y lags:
+forvalues i = 0/24 {
+	gen l`i' = 0
+	replace l`i' = treatment if num_fecha == `i' - 12 + 6637
+}
+
+drop l11
+replace l0 = treatment if num_fecha < 6625
+replace l24 = treatment if num_fecha > 6649
+
+* Corremos el Event Studies para Outcome "Car Accidents":
+reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
+gen estud = 0
+gen dnic90 = 0
+gen upic90 = 0
+gen dnic95 = 0
+gen upic95 = 0
+forvalues i = 0/10 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+
+}
+forvalues i = 12/24 {
+	replace estud = _b[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+}
+
+
+
+summ upic95
+local top_range = r(max)
+summ dnic95
+local bottom_range = r(min)
+
+twoway ///
+(rarea upic95 dnic95 cont,  ///
+fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic95 dnic95 cont, lcolor(green%60)) ///
+(line Zero cont, lcolor(black)) ///
+(sc estud cont, mcolor(blue)) ///
+(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 and 90 percent confidence bands") ///
+graphregion(color(white)) plotregion(color(white))
+
