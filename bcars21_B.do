@@ -3,6 +3,7 @@
 * Alejo Eyzaguirre
 
 clear all 
+
 cd "/Users/alejoeyzaguirre/Desktop/Tesis/Datos"
 
 global raw "/Users/alejoeyzaguirre/Desktop/Tesis/Datos" 
@@ -11,11 +12,12 @@ global output "/Users/alejoeyzaguirre/Desktop/Tesis/Datos/Car Accidents"
 
 ********************************************************************************
 
-************************** Usando Datos 2019 (40<60) ***************************
+**************************** Usando Datos 2021 (40<60) *************************
 
 ********************************************************************************
 
-import delimited "$output/ts19.csv", delimiter(comma) varnames(1)
+
+import delimited "$output/ts21.csv", delimiter(comma) varnames(1)
 split ts, p(" ")
 split ts1, p("-")
 split ts11, p("0")
@@ -46,22 +48,14 @@ replace idcomuna = idcomuna
 sort idcomuna date hora
 order date hora idcomuna
 keep date hora idcomuna dia mes año fecha hora1
-save "$output/bpanel2019", replace 
+save "$output/bpanel2021", replace 
 
-* Debo agregarle el código comuna--> Usar Accidents 2019 (comunas en Mayus.)
-import delimited "$output/car_accidents2021.csv", clear
-duplicates drop comuna codcomuna, force
-keep comuna codcomuna
-save "$output/dic", replace
 
-* Agregamos código comunas
-import delimited "$output/car_accidents2019.csv", clear 
-merge m:1 comuna using "$output/dic", nogen force
+import delimited "$output/car_accidents2021.csv", clear 
 
 drop if edad == "NULL"
 
 gen age = real(edad)
-
 
 keep if calidad == "CONDUCTOR"
 
@@ -70,7 +64,7 @@ keep if age > 39 & age < 60
 
 
 * Recopilamos número de conductores involucrados en un accidente en cada hora y 
-* para cada comuna.
+* para cada grupo demográfico.
 split hora, p(":")
 cap drop hora
 gen hora = real(hora1)
@@ -89,10 +83,10 @@ order date hora codcomuna region
 keep date hora codcomuna region outcome idcomuna
 
 * Guardamos:
-save "$output/baccidents2019_A", replace 
+save "$output/baccidents2021", replace 
 
-use "$output/bpanel2019", clear
-merge 1:1 date hora idcomuna using "$output/baccidents2019_A", nogen force
+use "$output/bpanel2021", clear
+merge 1:1 date hora idcomuna using "$output/baccidents2021", nogen force
 
 sort idcomuna date hora
 order date hora idcomuna
@@ -104,26 +98,25 @@ drop if idcomuna == 0
 sort idcomuna date hora
 
 
-* Generamos Filtro post apagón 24 horas:
+* Generamos Filtro:
 cap drop filter
 gen filter = 1
-replace filter = 0 if (mes == 3 & dia == 14 & hora > 12) | (mes == 3 & dia > 14) /*
-*/  | mes > 3
+replace filter = 0 if (dia > 4 & mes > 9) | (dia == 4 & mes == 10 & hora > 19)/*
+*/  | (mes > 10)
 
 * Generamos variables post:
 gen post = 0
-replace post = 1 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia > 13)
+replace post = 1 if dia == 4 & mes == 10 & hora > 11 & hora < 20
 
 * Importamos Variable Treatment:
 merge m:1 codcomuna using "Urgencias/intmun", nogen 
 
-
 * Generamos variable treat*post:
-gen treatpost = treatment*post
-
+gen treatpost = treat*post
 
 * Efecto Fijo Dia+Hora:
 gen diahora = fecha + hora1
+
 
 * Efecto Fijo Grupo+Hora:
 tostring idcomuna, gen(st_idcomuna)
@@ -135,28 +128,21 @@ gen diagrupo = fecha + st_idcomuna
 * Reemplazamos con cero en los outcomes vacíos:
 replace outcome = 0 if outcome == .
 
-
-* Para poder desestacionalizar en el futuro: 
+* Para poder desestacionalizar luego: 
 gen diasemana = 0
-replace diasemana = mod(dia+1,7) if mes == 1
-replace diasemana = mod(dia+4,7) if mes == 2
-replace diasemana = mod(dia+4,7) if mes == 3
-replace diasemana = mod(dia+0,7) if mes == 4
-replace diasemana = mod(dia+2,7) if mes == 5
-replace diasemana = mod(dia+5,7) if mes == 6
-replace diasemana = mod(dia+0,7) if mes == 7
-replace diasemana = mod(dia+3,7) if mes == 8
-replace diasemana = mod(dia+6,7) if mes == 9
-replace diasemana = mod(dia+1,7) if mes == 10
-replace diasemana = mod(dia+4,7) if mes == 11
-replace diasemana = mod(dia+6,7) if mes == 12
+replace diasemana = mod(dia+4,7) if mes == 1
+replace diasemana = mod(dia+0,7) if mes == 2
+replace diasemana = mod(dia+0,7) if mes == 3
+replace diasemana = mod(dia+3,7) if mes == 4
+replace diasemana = mod(dia+5,7) if mes == 5
+replace diasemana = mod(dia+1,7) if mes == 6
+replace diasemana = mod(dia+3,7) if mes == 7
+replace diasemana = mod(dia+6,7) if mes == 8
+replace diasemana = mod(dia+2,7) if mes == 9
+replace diasemana = mod(dia+4,7) if mes == 10
+replace diasemana = mod(dia+0,7) if mes == 11
+replace diasemana = mod(dia+2,7) if mes == 12
 replace diasemana = 7 if diasemana == 0
-
-bys idcomuna: gen num_fecha = _n
-sort idcomuna fecha
-order idcomuna fecha outcome
-gen num_fecha2 = round(num_fecha/6) 
-
 
 tostring diasemana, gen(st_diasemana)
 gen st_weekdaygrupo = st_diasemana + " " + st_idcomuna
@@ -169,6 +155,11 @@ encode st_weekdaygrupo, gen(weekdaygrupo)
 encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
+
+bys idcomuna: gen num_fecha = _n
+sort idcomuna fecha
+order idcomuna fecha outcome
+
 
 /********************************************************************************
 
@@ -183,35 +174,35 @@ set scheme s1color
 * Semana Outage
 preserve
 collapse (mean) outcome, by(date dia mes hora)
-keep if _n > 1656 & _n < 1825
+keep if _n > 6624 & _n < 6793
 gen cont = _n / 24
 gen during = .
-replace during = 0.6 if (mes == 3 & dia == 13 & hora > 12) | (mes == 3 & dia == 14 & hora < 13)
+replace during = 0.5 if dia == 4 & mes == 10 & hora > 11 & hora < 20
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save "plots/outage2.gph", replace
+graph save "plots/outage.gph", replace
 restore
 
 * Semana Pre Outage
 preserve
 collapse (mean) outcome, by(date hora)
-keep if _n < 1657 & _n > 1488
+keep if _n < 6625 & _n > 6456
 gen cont = _n / 24
 gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save "plots/preout2.gph", replace
+graph save "plots/preout.gph", replace
 restore
 
 * Semana Post Outage
 preserve
 collapse (mean) outcome, by(date hora)
-keep if _n > 1824 & _n < 1994
+keep if _n > 6792 & _n < 6961
 gen cont = _n / 24
 gen during = .
 twoway (area during cont, color(gs14))(line outcome cont) 
-graph save "plots/postout2.gph", replace
+graph save "plots/postout.gph", replace
 restore
 
-grc1leg2 "plots/preout2.gph" "plots/outage2.gph" "plots/postout2.gph"
+grc1leg2 "plots/preout.gph" "plots/outage.gph" "plots/postout.gph"
 
 
 * 2. LINEAR RELATIONSHIP
@@ -223,6 +214,9 @@ restore
 
 * 3. SEASONALLY ADJUSTED TRENDS PER DAY
 
+gen num_fecha2 = round(num_fecha/6)
+
+
 * Ahora calculamos las series desestacionalizadas por Día de la Semana y Valor Hora.
 cap drop res*
 qui reg outcome i.diasemana i.hora i.num_fecha2
@@ -231,8 +225,8 @@ predict res_out, residuals
 * Teniendo la serie desestacionalizada, procedo a calcular cada serie:
 * Serán 3 series para cada término: pre, post y during.
 gen period = 0
-replace period = 1 if dia ==13 & mes == 3
-replace period = 2 if dia > 13 & mes == 3 | mes > 3
+replace period = 1 if dia ==4 & mes == 10
+replace period = 2 if dia > 4 & mes == 10 | mes > 10
 egen plot_out = mean(res_out), by(period hora)
 
 
@@ -243,12 +237,12 @@ gen up = .
 gen down = .
 
 * Plot
-replace up = 1 if (mes == 3 & dia == 13 & hora > 12)
-replace down = -1 if (mes == 3 & dia == 13 & hora > 12)
+replace up = 2 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
+replace down = -1 if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 twoway (rarea up down hora if period == 1, sort color(gs14*.5)) (line plot_out hora if period == 0, lcolor(orange*.5)) /*
 */ (line plot_out hora if period == 1, lcolor(blue*.5)) /*
 */ (line plot_out hora if period == 2, lcolor(red*.5)) 
-graph save "plots/dcar19.gph", replace
+graph save "plots/dcar21.gph", replace
 
 restore
 
@@ -256,7 +250,7 @@ restore
 * 4. HISTOGRAM PER HIGH AND LOW SOCIAL MEDIA PENETRATION
 preserve
 sum treatment, d
-gen status = (treatment >= .6023793) // High penetration above median.
+gen status = (treatment >= 0.602) // High penetration above median.
 sum outcome if status == 0
 gen av_out0 = r(mean)
 sum outcome if status == 1
@@ -264,13 +258,14 @@ gen av_out1 = r(mean)
 collapse (mean) outcome av_out0 av_out1, by(fecha dia mes hora status)
 sort status fecha
 * Only compare during outage observations:
-keep if (dia == 13 & mes == 3 & hora > 10)
+keep if (dia == 4 & mes == 10 & hora > 11 & hora < 20)
 collapse (mean) outcome av_out0 av_out1, by(status)
 gen rel_out = 0
 replace rel_out = outcome / av_out0 if status == 0
 replace rel_out = outcome / av_out1 if status == 1
 statplot rel_out , over(status) vertical legend(off)
 restore
+
 
 
 */
@@ -281,13 +276,12 @@ restore
 ************************* Diferencias-en-Diferencias ***************************
 
 ********************************************************************************
-gen ex_outcome = (outcome > 0)
+
 
 * MARGEN INTENSIVO:
 * Botamos observaciones post apagón:
 preserve
 drop if filter == 0
-
 
 * (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe outcome treatpost , abs(idcomuna diahora) vce(cluster idcomuna)
@@ -299,6 +293,8 @@ reghdfe outcome treatpost , abs(diahora horagrupo) vce(cluster idcomuna)
 reghdfe outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster idcomuna)
 
 * MARGEN EXTENSIVO:
+
+gen ex_outcome = (outcome > 0)
 
 * (1) Con Efecto Fijo Grupo y Hora-Día:
 reghdfe ex_outcome treatpost , abs(idcomuna diahora) vce(cluster idcomuna)
@@ -312,6 +308,7 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster idcom
 restore
 
 
+
 ********************************************************************************
 
 ****************************** Event Studies ***********************************
@@ -320,181 +317,67 @@ restore
 
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
-
-* 1º Desestacionalizamos outcome:
+* Desestacionalizamos:
 qui reg outcome i.hora i.diasemana i.mes i.weekdaygrupo
 predict doutcome, residuals
 
-******************** Efecto Fijo Cohort y Moment
+******************** Efecto Fijo Moment y Cohort
 
 cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 32
+gen cont = _n - 13 if _n < 26
 gen Zero = 0
 
 * Genero leads y lags:
-forvalues i = 0/30 {
+forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treatment if num_fecha == 1718 - (24 - `i'*2)
-	replace l`i' = treatment if num_fecha == 1718 - (24 - `i'*2) + 1
+	replace l`i' = treatment if num_fecha == `i' - 12 + 6637
 }
 
-
 drop l11
-
-
-replace l0 = treatment if num_fecha < 1694
-replace l30= treatment if num_fecha > 1755
-
+replace l0 = treatment if num_fecha < 6625
+replace l24 = treatment if num_fecha > 6649
 
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
-gen dnic = 0
-gen upic = 0
+gen dnic90 = 0
+gen upic90 = 0
+gen dnic95 = 0
+gen upic95 = 0
 forvalues i = 0/10 {
 	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+
 }
-forvalues i = 12/30 {
+forvalues i = 12/24 {
 	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
 }
 
 
-summ upic
+
+summ upic95
 local top_range = r(max)
-summ dnic
+summ dnic95
 local bottom_range = r(min)
 
 twoway ///
-(rarea upic dnic cont,  ///
+(rarea upic95 dnic95 cont,  ///
 fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
-(rcap upic dnic cont, lcolor(green)) ///
+(rarea upic90 dnic90 cont,  ///
+fcolor(green%15) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic95 dnic95 cont, lcolor(green%60)) ///
+(rcap upic90 dnic90 cont, lcolor(green)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
- legend(off) ytitle("Outcome 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
+(function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
+ legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
+note("Notes: 95 and 90 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
-
-
-
-********************************************************************************
-
-****************************** Placebo Test ************************************
-
-********************************************************************************
-
-* Corremos el Event Studies para otro miércoles y a la misma hora de la siguiente semana:
-cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 32
-gen Zero = 0
-
-* Genero leads y lags:
-forvalues i = 0/30 {
-	gen l`i' = 0
-	replace l`i' = treatment if num_fecha == 1886 - (24 - `i'*2)
-	replace l`i' = treatment if num_fecha == 1886 - (24 - `i'*2) + 1
-}
-
-
-drop l11
-
-
-replace l0 = treatment if num_fecha < 1862
-replace l30= treatment if num_fecha > 1923
-
-
-* Corremos el Placebo para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
-gen estud = 0
-gen dnic = 0
-gen upic = 0
-forvalues i = 0/10 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-forvalues i = 12/30 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-summ upic
-local top_range = r(max)
-summ dnic
-local bottom_range = r(min)
-
-twoway ///
-(rarea upic dnic cont,  ///
-fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
-(rcap upic dnic cont, lcolor(green)) ///
-(line Zero cont, lcolor(black)) ///
-(sc estud cont, mcolor(blue)) ///
-(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
- legend(off) ytitle("Outcome (Placebo) 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-
-
-
-* Corremos el Event Studies para otro miércoles y a la misma hora de la semana previa:
-cap drop cont Zero l* estud* up* dn*
-gen cont = _n - 13 if _n < 32
-gen Zero = 0
-
-* Genero leads y lags:
-forvalues i = 0/30 {
-	gen l`i' = 0
-	replace l`i' = treatment if num_fecha == 1550 - (24 - `i'*2)
-	replace l`i' = treatment if num_fecha == 1550 - (24 - `i'*2) + 1
-}
-
-
-drop l11
-
-
-replace l0 = treatment if num_fecha < 1526
-replace l30= treatment if num_fecha > 1587
-
-
-* Corremos el Placebo para Outcome "Car Accidents":
-reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
-gen estud = 0
-gen dnic = 0
-gen upic = 0
-forvalues i = 0/10 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-forvalues i = 12/30 {
-	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
-}
-
-summ upic
-local top_range = r(max)
-summ dnic
-local bottom_range = r(min)
-
-twoway ///
-(rarea upic dnic cont,  ///
-fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
-(rcap upic dnic cont, lcolor(green)) ///
-(line Zero cont, lcolor(black)) ///
-(sc estud cont, mcolor(blue)) ///
-(function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
-(function y = 11.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
- legend(off) ytitle("Outcome (Placebo) 2019", size(medsmall)) xtitle("2 Hour Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
-graphregion(color(white)) plotregion(color(white))
-
-

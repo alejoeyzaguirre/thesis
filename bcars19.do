@@ -170,7 +170,7 @@ encode horagrupo, gen(num_horagrupo)
 encode diahora, gen(num_diahora)
 encode diagrupo, gen(num_diagrupo)
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -341,10 +341,10 @@ forvalues i = 0/30 {
 
 drop l11
 
-/*
+
 replace l0 = treatment if num_fecha < 1694
 replace l30= treatment if num_fecha > 1755
-*/
+
 
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)

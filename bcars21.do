@@ -159,7 +159,7 @@ sort idcomuna fecha
 order idcomuna fecha outcome
 
 
-********************************************************************************
+/********************************************************************************
 
 ***************************** FIGURAS ******************************************
 
@@ -316,7 +316,7 @@ restore
 * NOTA: NO BOTAMOS OBSERVACIONES POST APAGÓN.
 
 * Desestacionalizamos:
-qui reg outcome i.weekdaygrupo i.num_horagrupo i.mesgrupo
+qui reg outcome i.hora i.diasemana i.mes i.weekdaygrupo
 predict doutcome, residuals
 
 ******************** Efecto Fijo Moment y Cohort
@@ -338,46 +338,46 @@ replace l24 = treatment if num_fecha > 6649
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
 gen estud = 0
-gen dnic = 0
-gen upic = 0
+gen dnic90 = 0
+gen upic90 = 0
+gen dnic95 = 0
+gen upic95 = 0
 forvalues i = 0/10 {
 	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
+
 }
 forvalues i = 12/24 {
 	replace estud = _b[l`i'] if _n == `i'+1
-	replace dnic =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
-	replace upic =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic95 =  _b[l`i'] - 1.96* _se[l`i'] if _n == `i'+1
+	replace dnic90 =  _b[l`i'] - 1.64* _se[l`i'] if _n == `i'+1
+	replace upic95 =  _b[l`i'] + 1.96* _se[l`i'] if _n == `i'+1
+	replace upic90 =  _b[l`i'] + 1.64* _se[l`i'] if _n == `i'+1
 }
 
-/*
-summ estud if _n == 12
-local menosuno = r(mean)
 
-replace estud = estud - `menosuno'
-replace dnic = dnic - `menosuno'
-replace upic = upic - `menosuno'
-replace estud = 0 if _n == 12
-replace dnic = 0 if _n == 12
-replace upic= 0 if _n == 12
-*/
 
-summ upic
+summ upic95
 local top_range = r(max)
-summ dnic
+summ dnic95
 local bottom_range = r(min)
 
 twoway ///
-(rarea upic dnic cont,  ///
+(rarea upic95 dnic95 cont,  ///
 fcolor(green%10) lcolor(gs13) lw(none) lpattern(solid)) ///
-(rcap upic dnic cont, lcolor(green)) ///
+(rarea upic90 dnic90 cont,  ///
+fcolor(green%15) lcolor(gs13) lw(none) lpattern(solid)) ///
+(rcap upic95 dnic95 cont, lcolor(green%60)) ///
+(rcap upic90 dnic90 cont, lcolor(green)) ///
 (line Zero cont, lcolor(black)) ///
 (sc estud cont, mcolor(blue)) ///
 (function y = -0.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)) ///
 (function y = 5.5, range(`bottom_range' `top_range') horiz lpattern(dash) lcolor(gs10)), ///
  legend(off) ytitle("Outcome 2021", size(medsmall)) xtitle("Leads", size(medsmall)) ///
-note("Notes: 95 percent confidence bands") ///
+note("Notes: 95 and 90 percent confidence bands") ///
 graphregion(color(white)) plotregion(color(white))
 
 
