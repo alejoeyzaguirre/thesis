@@ -460,12 +460,12 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = treatment if num_fecha == `i' - 12 + 6637
+	replace l`i' = treatment if num_fecha == `i' - 12 + 6469
 }
 
 drop l11
-replace l0 = treatment if num_fecha < 6625
-replace l24 = treatment if num_fecha > 6649
+replace l0 = treatment if num_fecha < 6457
+replace l24 = treatment if num_fecha > 6481
 
 * Corremos el Event Studies para Outcome "Car Accidents":
 reghdfe doutcome l* , abs(diahora idcomuna) vce(cl idcomuna)
