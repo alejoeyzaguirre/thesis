@@ -280,26 +280,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe total treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe total treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe total treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_total = (total > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -320,10 +320,10 @@ replace treatpost2 = treatment if dia == 28 & mes == 9
 reghdfe total treatpost2, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe total treatpost2, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+reghdfe total treatpost2, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 
@@ -331,13 +331,13 @@ reghdfe total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comu
 gen ex_total = (total > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
+reghdfe ex_total treatpost2, abs(num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost2, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost2, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost2, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -351,10 +351,10 @@ replace treatpost3 = treatment if dia == 11 & mes == 10
 reghdfe total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe total treatpost3, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+reghdfe total treatpost3, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
@@ -364,10 +364,10 @@ gen ex_total = (total > 0)
 reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost3, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+reghdfe ex_total treatpost3, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -462,26 +462,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe g1_4 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_g1_4 = (g1_4 > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_g1_4 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g1_4 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -494,26 +494,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe g5_15 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe g5_15 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_g5_15 = (g5_15 > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g5_15 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_g5_15 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g5_15 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -527,26 +527,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe g15_64 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe g15_64 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_g15_64 = (g15_64 > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g15_64 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_g15_64 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g15_64 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
@@ -559,26 +559,26 @@ drop if dia > 4 & mes == 10 | mes > 10
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
-reghdfe g65 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe g65 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe g65 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe g65 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 
 
 * MARGEN EXTENSIVO
 gen ex_g65 = (g65 > 0)
 
 * Efecto Fijo TWFE
-reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha region) vce(cl nombrecomuna)
+reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g65 treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_g65 treatpost, abs(nombrecomuna num_fecha mes_x_comuna weekday_x_comuna region) vce(cl nombrecomuna)
+reghdfe ex_g65 treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 restore
 
 
