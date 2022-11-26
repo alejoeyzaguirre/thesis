@@ -300,6 +300,10 @@ reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 
 * Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
 reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
+sum total
+sum ex_total
+sum treatment
+
 restore
 
 
@@ -311,9 +315,9 @@ restore
 
 
 preserve
-drop if dia > 28 & mes == 9 | mes > 9
+drop if dia > 27 & mes == 9 | mes > 9
 gen treatpost2 = 0
-replace treatpost2 = treatment if dia == 28 & mes == 9
+replace treatpost2 = treatment if dia == 27 & mes == 9
 * MARGEN INTENSIVO
 
 * Efecto Fijo TWFE
