@@ -89,17 +89,18 @@ gen ef_date = date1+st_hour
 split date, p(" ")
 drop if date1 == "2019-03-27"
 
+* PLACEBO AJUSTAMOS FILTER Y POST
 
 * Generamos Filtro: (Ya no usado --> "Usamos Post y no During")
 cap drop filter
 gen filter = 1
-replace filter = 0 if (month == 3 & day == 14 & hour > 10) | (month == 3 & day > 14) /*
+replace filter = 0 if (month == 3 & day == 11 & hour > 10) | (month == 3 & day > 11) /*
 */  | month > 3
 
 
 * Generamos variables post:
 gen post = 0
-replace post = 1 if (month == 3 & day == 13 & hour > 10) | (month == 3 & day > 13)
+replace post = 1 if (month == 3 & day == 10 & hour > 10) | (month == 3 & day > 10)
 
 
 * Generamos Index (Levy-2022) --> Multiple Hypothesis.
@@ -452,12 +453,12 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/30 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2)
-	replace l`i' = socialm if num_fecha == 348 - (24 - `i'*2) + 1
+	replace l`i' = socialm if num_fecha == 420 - (24 - `i'*2)
+	replace l`i' = socialm if num_fecha == 420 - (24 - `i'*2) + 1
 }
 
-replace l0 = socialm if num_fecha < 324
-replace l30 = socialm if num_fecha > 385
+replace l0 = socialm if num_fecha < 396
+replace l30 = socialm if num_fecha > 457
 
 drop l11
 

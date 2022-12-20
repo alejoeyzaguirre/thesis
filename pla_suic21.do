@@ -448,11 +448,11 @@ gen Zero = 0
 * Genero leads y lags:
 forvalues i = 0/24 {
 	gen l`i' = 0
-	replace l`i' = socialm if num_fecha == `i' -12 + 346
+	replace l`i' = socialm if num_fecha == `i' -12 + 418
 }
 
-replace l0 = socialm if num_fecha < 334
-replace l24 = socialm if num_fecha > 358
+replace l0 = socialm if num_fecha < 406
+replace l24 = socialm if num_fecha > 430
 
 
 drop l11
