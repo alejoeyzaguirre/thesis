@@ -141,9 +141,9 @@ save "$output/intmun", replace
 * Importe Base que ya fue pre-procesada en Python (ver thesis.ipynb)
 use "$output/emergencies", clear
 
-* Me quedo solo con causas relacionadas a salud mental: : ()
+* Me quedo solo con INGRESOS POR DIARREA AGUDA:
 *tab glosacausa
-keep if idcausa > 34 & idcausa <43
+keep if idcausa ==29
 
 * Nos quedamos solo con obs. de la RM:
 gen region = round(códigocomuna / 1000)
@@ -156,10 +156,6 @@ rename __14 g5_15
 rename column7 g1_4
 rename menor_a_1 g0
 
-* Síndromes de Abstinencia:
-gen withdrawal = 0
-replace withdrawal = 1 if idcausa == 35 | idcausa == 37 | idcausa == 39 | idcausa == 40
-keep if withdrawal == 1
 
 * Figuras: 
 
@@ -200,7 +196,7 @@ restore
 * Sacamos la suma de todas los ingresos por Salud Mental entre todas las comunas
 * de cada día:
 drop glosacausa
-collapse (sum) total g*, by(dia mes nombrecomuna códigocomuna withdrawal)
+collapse (sum) total g*, by(dia mes nombrecomuna códigocomuna)
 sort nombrecomuna mes dia
 
 * Juntamos con base de Treatment a partir de CASEN 2017.
@@ -306,75 +302,6 @@ sum ex_total
 sum treatment, d
 
 restore
-
-
-********************************************************************************
-
-************************* Placebo Tests ****************************************
-
-********************************************************************************
-
-
-preserve
-drop if dia > 27 & mes == 9 | mes > 9
-gen treatpost2 = 0
-replace treatpost2 = treatment if dia == 27 & mes == 9
-* MARGEN INTENSIVO
-
-* Efecto Fijo TWFE
-reghdfe total treatpost2, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost2, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost2, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
-
-
-
-* MARGEN EXTENSIVO
-gen ex_total = (total > 0)
-
-* Efecto Fijo TWFE
-reghdfe ex_total treatpost2, abs(num_fecha) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost2, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost2, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
-restore
-
-
-preserve
-drop if dia > 11 & mes == 10 | mes > 10
-gen treatpost3 = 0
-replace treatpost3 = treatment if dia == 11 & mes == 10
-* MARGEN INTENSIVO
-
-* Efecto Fijo TWFE
-reghdfe total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna
-reghdfe total treatpost3, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe total treatpost3, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
-
-
-* MARGEN EXTENSIVO
-gen ex_total = (total > 0)
-
-* Efecto Fijo TWFE
-reghdfe ex_total treatpost3, abs(nombrecomuna num_fecha) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna
-reghdfe ex_total treatpost3, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
-
-* Efecto Fijo TWFE + Mes x Comuna + DayOfTheWeek x Comuna
-reghdfe ex_total treatpost3, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
-restore
-
 
 
 ********************************************************************************
