@@ -331,6 +331,9 @@ reghdfe ex_outcome treatpost , abs(diahora horagrupo) vce(cluster cohort)
 * (3) Con Efecto Fijo Grupo, Hora-Día, HoraxGrupo y DiaxGrupo:
 reghdfe ex_outcome treatpost , abs(diahora horagrupo diagrupo) vce(cluster cohort)
 
+sum treat, d
+sum outcome
+sum ex_outcome
 restore
 
 

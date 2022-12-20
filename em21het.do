@@ -267,6 +267,7 @@ gen st_mes_x_comuna = nombrecomuna + " " + st_mes
 encode st_weekday_x_comuna, gen(weekday_x_comuna)
 encode st_mes_x_comuna, gen(mes_x_comuna)
 
+drop if region == .
 
 ********************************************************************************
 
@@ -302,7 +303,7 @@ reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna) vce(cl nombrecomuna)
 reghdfe ex_total treatpost, abs(num_fecha mes_x_comuna weekday_x_comuna) vce(cl nombrecomuna)
 sum total
 sum ex_total
-sum treatment
+sum treatment, d
 
 restore
 
